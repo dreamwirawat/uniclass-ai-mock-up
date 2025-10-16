@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, Calendar, Clock, BookOpen } from "lucide-react";
 import Link from "next/link";
 
-export default function CreateSchedulePage() {
+function CreateScheduleForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const lessonParam = searchParams.get("lesson");
@@ -237,5 +237,13 @@ export default function CreateSchedulePage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function CreateSchedulePage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <CreateScheduleForm />
+    </Suspense>
   );
 }

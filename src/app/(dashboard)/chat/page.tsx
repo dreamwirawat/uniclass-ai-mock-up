@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Card,
@@ -34,7 +34,7 @@ interface Message {
   artifact?: ArtifactData;
 }
 
-export default function ChatPage() {
+function ChatPageContent() {
   const searchParams = useSearchParams();
   const context = searchParams.get("context");
 
@@ -225,7 +225,7 @@ export default function ChatPage() {
                   >
                     {message.context && (
                       <div className="text-xs p-2 rounded-lg bg-muted/50 border italic">
-                        Context: "{message.context}"
+                        Context: &quot;{message.context}&quot;
                       </div>
                     )}
                     <div
@@ -368,8 +368,9 @@ export default function ChatPage() {
                 🎨 Interactive Artifacts
               </h3>
               <p className="text-xs text-muted-foreground">
-                ลองพิมพ์ "ขอกราฟ", "ขอแผนผัง", "ขอดูร่างกาย" หรือ "ขอแผนที่"
-                เพื่อดู visualization แบบ interactive!
+                ลองพิมพ์ &quot;ขอกราฟ&quot;, &quot;ขอแผนผัง&quot;,
+                &quot;ขอดูร่างกาย&quot; หรือ &quot;ขอแผนที่&quot; เพื่อดู
+                visualization แบบ interactive!
               </p>
             </div>
           </CardContent>
@@ -387,3 +388,11 @@ const quickTopics = [
   "ขอแผนที่ภูมิภาคไทย",
   "ยกตัวอย่างให้หน่อยได้ไหม?",
 ];
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading chat...</div>}>
+      <ChatPageContent />
+    </Suspense>
+  );
+}

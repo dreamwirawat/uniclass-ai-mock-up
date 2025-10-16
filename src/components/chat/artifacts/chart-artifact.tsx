@@ -32,6 +32,68 @@ export function ChartArtifact({
   data,
   description,
 }: ChartArtifactProps) {
+  const renderChart = () => {
+    if (type === "line") {
+      return (
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#FF6B1A"
+            strokeWidth={2}
+          />
+        </LineChart>
+      );
+    }
+
+    if (type === "bar") {
+      return (
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="value" fill="#FF6B1A" />
+        </BarChart>
+      );
+    }
+
+    if (type === "pie") {
+      return (
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={({ name, percent }) =>
+              `${name} ${(percent * 100).toFixed(0)}%`
+            }
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
       <CardHeader>
@@ -44,55 +106,7 @@ export function ChartArtifact({
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          {type === "line" && (
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#FF6B1A"
-                strokeWidth={2}
-              />
-            </LineChart>
-          )}
-          {type === "bar" && (
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#FF6B1A" />
-            </BarChart>
-          )}
-          {type === "pie" && (
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
-                }
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {data.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          )}
+          {renderChart() as any}
         </ResponsiveContainer>
       </CardContent>
     </Card>

@@ -26,7 +26,7 @@ export default function DashboardPage() {
           Welcome back! 👋
         </h1>
         <p className="text-sm text-muted-foreground">
-          Here's your learning progress and upcoming sessions.
+          Here&apos;s your learning progress and upcoming sessions.
         </p>
       </div>
 

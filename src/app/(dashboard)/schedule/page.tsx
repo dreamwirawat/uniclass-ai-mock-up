@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
@@ -18,7 +18,7 @@ import Link from "next/link";
 const days = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
 const hours = Array.from({ length: 14 }, (_, i) => i + 8); // 8 AM to 9 PM
 
-export default function SchedulePage() {
+function SchedulePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const shouldCreate = searchParams.get("create");
@@ -231,7 +231,7 @@ export default function SchedulePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>This Week's Stats</CardTitle>
+            <CardTitle>This Week&apos;s Stats</CardTitle>
             <CardDescription>Your study time summary</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -320,3 +320,13 @@ const upcomingSessions = [
     category: "วิทยาการคอมพิวเตอร์",
   },
 ];
+
+export default function SchedulePage() {
+  return (
+    <Suspense
+      fallback={<div className="p-8 text-center">Loading schedule...</div>}
+    >
+      <SchedulePageContent />
+    </Suspense>
+  );
+}

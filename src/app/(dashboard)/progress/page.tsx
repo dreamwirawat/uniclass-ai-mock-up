@@ -275,7 +275,7 @@ export default function ProgressPage() {
             <CardHeader>
               <CardTitle>Learning Coverage</CardTitle>
               <CardDescription>
-                Track what you've learned across different topics
+                Track what you&apos;ve learned across different topics
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

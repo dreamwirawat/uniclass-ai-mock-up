@@ -89,7 +89,7 @@ export default function LoginPage() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
               <p className="text-sm text-muted-foreground text-center">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link href="/register" className="text-primary hover:underline">
                   Sign Up
                 </Link>
