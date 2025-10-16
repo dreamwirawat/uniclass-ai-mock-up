@@ -15,6 +15,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Send, Bot, User, Sparkles, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  detectArtifactKeywords,
+  generateArtifact,
+  ArtifactData,
+} from "@/lib/artifact-generator";
+import { ChartArtifact } from "@/components/chat/artifacts/chart-artifact";
+import { DiagramArtifact } from "@/components/chat/artifacts/diagram-artifact";
+import { AnatomyArtifact } from "@/components/chat/artifacts/anatomy-artifact";
+import { MapArtifact } from "@/components/chat/artifacts/map-artifact";
 
 interface Message {
   id: string;
@@ -22,6 +31,7 @@ interface Message {
   content: string;
   context?: string;
   timestamp: Date;
+  artifact?: ArtifactData;
 }
 
 export default function ChatPage() {
@@ -72,28 +82,52 @@ export default function ChatPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const userInput = input;
     setInput("");
     setIsTyping(true);
 
+    // Detect if user wants an artifact
+    const artifactType = detectArtifactKeywords(userInput);
+
     // Simulate AI response with context awareness
     setTimeout(() => {
-      let contextualResponse = `ฉันเข้าใจว่าคุณกำลังถามเกี่ยวกับ "${input}" `;
+      let contextualResponse = "";
+      let artifact: ArtifactData | undefined;
 
-      if (currentContext?.startsWith("lesson-")) {
-        contextualResponse += `ในบทเรียนนี้ ให้ฉันช่วยอธิบายให้ชัดเจนนะคะ...\n\n`;
-      } else if (currentContext?.startsWith("plan-")) {
-        contextualResponse += `สำหรับ Study Plan ของคุณ ให้ฉันช่วยวางแผนการเรียนนะคะ...\n\n`;
+      // Generate artifact if keyword detected
+      if (artifactType) {
+        artifact = generateArtifact(artifactType, userInput) || undefined;
+
+        if (artifactType === "chart") {
+          contextualResponse = `แน่นอนค่ะ! ฉันสร้างกราฟให้คุณดูแล้วนะคะ 📊\n\nกราฟนี้แสดง${artifact?.props.title} ซึ่งจะช่วยให้คุณเห็นภาพรวมได้ชัดเจนขึ้น คุณสามารถดูรายละเอียดแต่ละส่วนได้เลยค่ะ`;
+        } else if (artifactType === "diagram") {
+          contextualResponse = `ให้ฉันสร้างแผนผังให้คุณดูนะคะ 🗺️\n\nแผนผังนี้แสดงขั้นตอนและความสัมพันธ์ต่างๆ ที่เกี่ยวข้อง จะช่วยให้คุณเข้าใจกระบวนการได้ง่ายขึ้นค่ะ`;
+        } else if (artifactType === "anatomy") {
+          contextualResponse = `แสดงโครงสร้างร่างกายมนุษย์ให้คุณดูค่ะ 🫀\n\นี่คือแผนภาพร่างกายมนุษย์แบบ interactive คุณสามารถคลิกที่อวัยวะต่างๆ เพื่อดูรายละเอียดได้เลยนะคะ`;
+        } else if (artifactType === "map") {
+          contextualResponse = `สร้างแผนที่ให้คุณดูแล้วค่ะ 🗺️\n\nนี่คือแผนที่แบบ interactive คุณสามารถคลิกที่จุดต่างๆ เพื่อดูข้อมูลเพิ่มเติมได้ค่ะ`;
+        }
       } else {
-        contextualResponse += `ให้ฉันช่วยคุณนะคะ...\n\n`;
-      }
+        // Normal response without artifact
+        contextualResponse = `ฉันเข้าใจว่าคุณกำลังถามเกี่ยวกับ "${userInput}" `;
 
-      contextualResponse += `นี่คือการตอบกลับแบบจำลอง ในระบบจริงจะเชื่อมต่อกับ OpenAI API เพื่อให้คำตอบที่ชาญฉลาดและตรงตามบริบทของคำถามและการเรียนรู้ของคุณค่ะ`;
+        if (currentContext?.startsWith("lesson-")) {
+          contextualResponse += `ในบทเรียนนี้ ให้ฉันช่วยอธิบายให้ชัดเจนนะคะ...\n\n`;
+        } else if (currentContext?.startsWith("plan-")) {
+          contextualResponse += `สำหรับ Study Plan ของคุณ ให้ฉันช่วยวางแผนการเรียนนะคะ...\n\n`;
+        } else {
+          contextualResponse += `ให้ฉันช่วยคุณนะคะ...\n\n`;
+        }
+
+        contextualResponse += `นี่คือการตอบกลับแบบจำลอง ในระบบจริงจะเชื่อมต่อกับ OpenAI API เพื่อให้คำตอบที่ชาญฉลาดและตรงตามบริบทของคำถามและการเรียนรู้ของคุณค่ะ`;
+      }
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: contextualResponse,
         timestamp: new Date(),
+        artifact,
       };
       setMessages((prev) => [...prev, aiMessage]);
       setIsTyping(false);
@@ -104,6 +138,21 @@ export default function ChatPage() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const renderArtifact = (artifact: ArtifactData) => {
+    switch (artifact.type) {
+      case "chart":
+        return <ChartArtifact {...artifact.props} />;
+      case "diagram":
+        return <DiagramArtifact {...artifact.props} />;
+      case "anatomy":
+        return <AnatomyArtifact {...artifact.props} />;
+      case "map":
+        return <MapArtifact {...artifact.props} />;
+      default:
+        return null;
     }
   };
 
@@ -168,8 +217,10 @@ export default function ChatPage() {
 
                   <div
                     className={cn(
-                      "flex-1 space-y-2 max-w-[80%]",
-                      message.role === "user" && "flex flex-col items-end"
+                      "flex-1 space-y-2",
+                      message.role === "user"
+                        ? "flex flex-col items-end max-w-[80%]"
+                        : "max-w-full"
                     )}
                   >
                     {message.context && (
@@ -181,7 +232,7 @@ export default function ChatPage() {
                       className={cn(
                         "p-4 rounded-2xl",
                         message.role === "assistant"
-                          ? "bg-muted"
+                          ? "bg-muted max-w-[80%]"
                           : "bg-primary text-primary-foreground"
                       )}
                     >
@@ -189,6 +240,14 @@ export default function ChatPage() {
                         {message.content}
                       </p>
                     </div>
+
+                    {/* Render artifact if present */}
+                    {message.artifact && message.role === "assistant" && (
+                      <div className="w-full max-w-4xl">
+                        {renderArtifact(message.artifact)}
+                      </div>
+                    )}
+
                     <span className="text-xs text-muted-foreground px-2">
                       {message.timestamp.toLocaleTimeString([], {
                         hour: "2-digit",
@@ -294,12 +353,25 @@ export default function ChatPage() {
         </Card>
 
         <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
-          <CardContent className="pt-6">
-            <h3 className="font-display font-bold text-sm mb-2">💡 Pro Tip</h3>
-            <p className="text-xs text-muted-foreground">
-              Highlight any text while studying to ask questions about it
-              instantly!
-            </p>
+          <CardContent className="pt-6 space-y-3">
+            <div>
+              <h3 className="font-display font-bold text-sm mb-2">
+                💡 Pro Tips
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Highlight any text while studying to ask questions about it
+                instantly!
+              </p>
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-sm mb-2">
+                🎨 Interactive Artifacts
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                ลองพิมพ์ "ขอกราฟ", "ขอแผนผัง", "ขอดูร่างกาย" หรือ "ขอแผนที่"
+                เพื่อดู visualization แบบ interactive!
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -309,8 +381,9 @@ export default function ChatPage() {
 
 const quickTopics = [
   "อธิบายแนวคิดนี้แบบง่ายๆ",
-  "ให้แบบฝึกหัดฉัน",
-  "ข้อผิดพลาดที่พบบ่อยคืออะไร?",
-  "เรื่องนี้เกี่ยวข้องกับ...อย่างไร?",
+  "ขอกราฟความก้าวหน้า",
+  "ขอแผนผังกระบวนการเรียนรู้",
+  "ขอดูโครงสร้างร่างกาย",
+  "ขอแผนที่ภูมิภาคไทย",
   "ยกตัวอย่างให้หน่อยได้ไหม?",
 ];

@@ -23,6 +23,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  detectArtifactKeywords,
+  generateArtifact,
+  ArtifactData,
+} from "@/lib/artifact-generator";
+import { ChartArtifact } from "./artifacts/chart-artifact";
+import { DiagramArtifact } from "./artifacts/diagram-artifact";
+import { AnatomyArtifact } from "./artifacts/anatomy-artifact";
+import { MapArtifact } from "./artifacts/map-artifact";
 
 interface Message {
   id: string;
@@ -30,6 +39,7 @@ interface Message {
   content: string;
   context?: string;
   timestamp: Date;
+  artifact?: ArtifactData;
 }
 
 interface ChatSidebarProps {
@@ -37,6 +47,9 @@ interface ChatSidebarProps {
   contextType?: "lesson" | "plan" | "general";
   contextId?: string;
   defaultOpen?: boolean;
+  mode?: "drawer" | "inline"; // drawer = floating overlay, inline = part of page
+  isOpen?: boolean; // for controlled component
+  onOpenChange?: (open: boolean) => void; // for controlled component
 }
 
 export function ChatSidebar({
@@ -44,8 +57,21 @@ export function ChatSidebar({
   contextType = "general",
   contextId,
   defaultOpen = false,
+  mode = "drawer",
+  isOpen: controlledIsOpen,
+  onOpenChange,
 }: ChatSidebarProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [internalIsOpen, setInternalIsOpen] = useState(defaultOpen);
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
+
+  const setIsOpen = (open: boolean) => {
+    if (!isControlled) {
+      setInternalIsOpen(open);
+    }
+    onOpenChange?.(open);
+  };
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -95,28 +121,52 @@ export function ChatSidebar({
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const userInput = input;
     setInput("");
     setIsTyping(true);
 
+    // Detect if user wants an artifact
+    const artifactType = detectArtifactKeywords(userInput);
+
     // Simulate AI response
     setTimeout(() => {
-      let contextualResponse = `เกี่ยวกับ "${input}" `;
+      let contextualResponse = "";
+      let artifact: ArtifactData | undefined;
 
-      if (contextType === "lesson") {
-        contextualResponse += `ในบทเรียนนี้ ให้ฉันอธิบายให้ฟังนะคะ...\n\n`;
-      } else if (contextType === "plan") {
-        contextualResponse += `สำหรับ Study Plan ของคุณ ให้ฉันช่วยวิเคราะห์นะคะ...\n\n`;
+      // Generate artifact if keyword detected
+      if (artifactType) {
+        artifact = generateArtifact(artifactType, userInput) || undefined;
+
+        if (artifactType === "chart") {
+          contextualResponse = `แน่นอนค่ะ! ฉันสร้างกราฟให้คุณดูแล้วนะคะ 📊\n\nกราฟนี้แสดง${artifact?.props.title} ซึ่งจะช่วยให้คุณเห็นภาพรวมได้ชัดเจนขึ้น คุณสามารถดูรายละเอียดแต่ละส่วนได้เลยค่ะ`;
+        } else if (artifactType === "diagram") {
+          contextualResponse = `ให้ฉันสร้างแผนผังให้คุณดูนะคะ 🗺️\n\nแผนผังนี้แสดงขั้นตอนและความสัมพันธ์ต่างๆ ที่เกี่ยวข้อง จะช่วยให้คุณเข้าใจกระบวนการได้ง่ายขึ้นค่ะ`;
+        } else if (artifactType === "anatomy") {
+          contextualResponse = `แสดงโครงสร้างร่างกายมนุษย์ให้คุณดูค่ะ 🫀\n\nนี่คือแผนภาพร่างกายมนุษย์แบบ interactive คุณสามารถคลิกที่อวัยวะต่างๆ เพื่อดูรายละเอียดได้เลยนะคะ`;
+        } else if (artifactType === "map") {
+          contextualResponse = `สร้างแผนที่ให้คุณดูแล้วค่ะ 🗺️\n\nนี่คือแผนที่แบบ interactive คุณสามารถคลิกที่จุดต่างๆ เพื่อดูข้อมูลเพิ่มเติมได้ค่ะ`;
+        }
       } else {
-        contextualResponse += `ให้ฉันช่วยคุณนะคะ...\n\n`;
-      }
+        // Normal response without artifact
+        contextualResponse = `เกี่ยวกับ "${userInput}" `;
 
-      contextualResponse += `นี่คือการตอบกลับแบบจำลอง ในระบบจริงจะเชื่อมต่อกับ OpenAI API เพื่อให้คำตอบที่ชาญฉลาดและตรงตามบริบทของคำถามและการเรียนรู้ของคุณค่ะ 🤖`;
+        if (contextType === "lesson") {
+          contextualResponse += `ในบทเรียนนี้ ให้ฉันอธิบายให้ฟังนะคะ...\n\n`;
+        } else if (contextType === "plan") {
+          contextualResponse += `สำหรับ Study Plan ของคุณ ให้ฉันช่วยวิเคราะห์นะคะ...\n\n`;
+        } else {
+          contextualResponse += `ให้ฉันช่วยคุณนะคะ...\n\n`;
+        }
+
+        contextualResponse += `นี่คือการตอบกลับแบบจำลอง ในระบบจริงจะเชื่อมต่อกับ OpenAI API เพื่อให้คำตอบที่ชาญฉลาดและตรงตามบริบทของคำถามและการเรียนรู้ของคุณค่ะ 🤖`;
+      }
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: contextualResponse,
         timestamp: new Date(),
+        artifact,
       };
 
       setMessages((prev) => [...prev, aiMessage]);
@@ -131,6 +181,33 @@ export function ChatSidebar({
     }
   };
 
+  const renderArtifact = (artifact: ArtifactData) => {
+    switch (artifact.type) {
+      case "chart":
+        return <ChartArtifact {...artifact.props} />;
+      case "diagram":
+        return <DiagramArtifact {...artifact.props} />;
+      case "anatomy":
+        return <AnatomyArtifact {...artifact.props} />;
+      case "map":
+        return <MapArtifact {...artifact.props} />;
+      default:
+        return null;
+    }
+  };
+
+  // Inline mode - render as part of page
+  if (mode === "inline") {
+    if (!isOpen) return null;
+
+    return (
+      <div className="w-96 bg-background border-l shadow-lg flex flex-col h-full animate-slide-in-right">
+        {renderChatContent()}
+      </div>
+    );
+  }
+
+  // Drawer mode - fixed overlay
   return (
     <>
       {/* Toggle Button - Fixed Position */}
@@ -151,6 +228,22 @@ export function ChatSidebar({
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
+        {renderChatContent()}
+      </div>
+
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-fade-in"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </>
+  );
+
+  function renderChatContent() {
+    return (
+      <>
         {/* Header */}
         <div className="border-b p-4 flex items-center justify-between bg-gradient-to-r from-primary/5 to-accent/5">
           <div className="flex items-center gap-2">
@@ -211,7 +304,7 @@ export function ChatSidebar({
 
               <div
                 className={cn(
-                  "flex-1 space-y-1",
+                  "flex-1 space-y-2",
                   message.role === "user" && "flex flex-col items-end"
                 )}
               >
@@ -222,16 +315,24 @@ export function ChatSidebar({
                 )}
                 <div
                   className={cn(
-                    "p-3 rounded-2xl max-w-[85%]",
+                    "p-3 rounded-2xl",
                     message.role === "assistant"
-                      ? "bg-muted"
-                      : "bg-primary text-primary-foreground"
+                      ? "bg-muted max-w-[85%]"
+                      : "bg-primary text-primary-foreground max-w-[85%]"
                   )}
                 >
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">
                     {message.content}
                   </p>
                 </div>
+
+                {/* Render artifact if present */}
+                {message.artifact && message.role === "assistant" && (
+                  <div className="w-full">
+                    {renderArtifact(message.artifact)}
+                  </div>
+                )}
+
                 <span className="text-xs text-muted-foreground px-2">
                   {message.timestamp.toLocaleTimeString([], {
                     hour: "2-digit",
@@ -306,17 +407,9 @@ export function ChatSidebar({
             กด Enter เพื่อส่งข้อความ
           </p>
         </div>
-      </div>
-
-      {/* Backdrop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-fade-in"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </>
-  );
+      </>
+    );
+  }
 }
 
 function getQuickSuggestions(contextType: string): string[] {
@@ -324,12 +417,12 @@ function getQuickSuggestions(contextType: string): string[] {
     case "lesson":
       return [
         "อธิบายให้ง่ายขึ้นได้ไหม?",
-        "ให้ตัวอย่างเพิ่ม",
-        "สรุปประเด็นสำคัญ",
+        "ขอกราฟความก้าวหน้า",
+        "ขอแผนผังกระบวนการเรียนรู้",
       ];
     case "plan":
-      return ["แนะนำการวางแผนเรียน", "ควรเริ่มจากอะไร?", "เทคนิคเรียนที่ดี"];
+      return ["แนะนำการวางแผนเรียน", "ขอกราฟแบบแท่ง", "ขอแผนที่ภูมิภาคไทย"];
     default:
-      return ["อธิบายเรื่องนี้", "ให้แบบฝึกหัด", "ยกตัวอย่าง"];
+      return ["อธิบายเรื่องนี้", "ขอดูโครงสร้างร่างกาย", "ขอกราฟวงกลม"];
   }
 }

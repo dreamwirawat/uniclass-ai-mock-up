@@ -94,30 +94,60 @@ Intelligent AI tutoring powered by OpenAI's GPT-4.
 - Instant popup to ask AI about the selected text
 - Context is automatically included in the chat
 
-**2. Chat Sidebar (NEW! 🎉)**
+**2. Chat Sidebar with Interactive Artifacts (NEW! 🎉)**
 
-- 💬 Floating chat button on Study Plans and Lesson pages
-- 📱 Slide-in sidebar from the right side
+- 💬 Two modes: **Inline** (part of page) and **Drawer** (floating overlay)
+- 📱 **Inline mode** in Lesson pages - click "Ask AI Tutor" button in header
 - 🎯 Context-aware: AI knows if you're viewing a lesson or plan
-- ✨ Smooth animations with backdrop blur
-- 🔄 Open/Close with button or backdrop click
+- ✨ Smooth slide-in animations
+- 🔄 Toggle open/close with button
 - 💡 Quick suggestions based on context
 - 🤖 Typing indicator for AI responses
 - ⚡ Auto-scroll to latest messages
 
+**🎨 Interactive Artifacts** (NEW!):
+AI can generate interactive visualizations in **all chat interfaces** (full chat page, chat sidebar, lesson chat) when you ask:
+
+- **📊 Charts & Graphs** - Keywords: "ขอกราฟ", "แผนภูมิ", "chart", "graph"
+  - Line charts for trends
+  - Bar charts for comparisons
+  - Pie charts for proportions
+  - Interactive with Recharts library
+- **🗺️ Diagrams** - Keywords: "ขอแผนผัง", "โครงสร้าง", "diagram"
+  - Process flows
+  - System diagrams
+  - Relationship maps
+  - Interactive SVG with clickable nodes
+- **🫀 Anatomy Models** - Keywords: "ร่างกาย", "อวัยวะ", "anatomy"
+  - Human body structure
+  - Clickable organs with descriptions
+  - Color-coded parts
+  - Interactive learning
+- **🗺️ Maps** - Keywords: "แผนที่", "map", "ที่ตั้ง"
+  - Thailand regions map
+  - Interactive locations
+  - Click to see details
+  - Custom markers
+
 **Where Chat Sidebar Appears**:
 
-- Study Plans List (`/study-plans`)
-- Study Plan Detail (`/study-plans/[id]`)
-- Lesson Detail (`/study-plans/[id]/lesson/[lessonId]`)
+- Study Plans List (`/study-plans`) - Drawer mode with floating button
+- Study Plan Detail (`/study-plans/[id]`) - Drawer mode with floating button
+- **Lesson Detail** (`/study-plans/[id]/lesson/[lessonId]`) - **Inline mode** integrated into page layout
 
 **Implementation**:
 
 - `src/app/(dashboard)/chat/page.tsx` - Full chat interface
-- `src/components/chat/chat-sidebar.tsx` - **NEW: Chat sidebar component**
+- `src/components/chat/chat-sidebar.tsx` - Chat sidebar component with artifacts
 - `src/components/chat/highlight-popup.tsx` - Highlight feature
 - `src/app/api/chat/route.ts` - OpenAI integration
 - `src/lib/openai.ts` - AI configuration
+- `src/lib/artifact-generator.ts` - **NEW: Artifact detection & generation**
+- `src/components/chat/artifacts/` - **NEW: Artifact components**
+  - `chart-artifact.tsx` - Interactive charts (Recharts)
+  - `diagram-artifact.tsx` - SVG diagrams
+  - `anatomy-artifact.tsx` - Human body model
+  - `map-artifact.tsx` - Interactive maps
 
 ---
 

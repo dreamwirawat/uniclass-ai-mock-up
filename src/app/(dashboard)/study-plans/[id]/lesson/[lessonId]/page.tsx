@@ -40,6 +40,7 @@ export default function LessonDetailPage({ params }: PageProps) {
   const router = useRouter();
   const [completed, setCompleted] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
 
   // Mock data - in production, fetch based on params
   const lesson = mockLessons.find((l) => l.id === lessonId) || mockLessons[0];
@@ -71,8 +72,8 @@ export default function LessonDetailPage({ params }: PageProps) {
   };
 
   return (
-    <>
-      <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+    <div className="flex gap-6 h-full">
+      <div className="flex-1 space-y-6 animate-fade-in overflow-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -100,12 +101,12 @@ export default function LessonDetailPage({ params }: PageProps) {
             </div>
           </div>
           <Button
-            variant={completed ? "outline" : "default"}
+            variant={showAIChat ? "outline" : "default"}
             className="gap-2"
-            onClick={() => setShowQuiz(!showQuiz)}
+            onClick={() => setShowAIChat(!showAIChat)}
           >
             <MessageCircle className="h-4 w-4" />
-            Ask AI Tutor
+            {showAIChat ? "ปิด AI Tutor" : "Ask AI Tutor"}
           </Button>
         </div>
 
@@ -374,9 +375,15 @@ export default function LessonDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* AI Chat Sidebar */}
-      <ChatSidebar contextType="lesson" contextId={lessonId} />
-    </>
+      {/* AI Chat Sidebar - Inline Mode */}
+      <ChatSidebar
+        mode="inline"
+        contextType="lesson"
+        contextId={lessonId}
+        isOpen={showAIChat}
+        onOpenChange={setShowAIChat}
+      />
+    </div>
   );
 }
 
