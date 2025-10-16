@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ChatSidebar } from "@/components/chat/chat-sidebar";
 
 interface PageProps {
   params: Promise<{
@@ -70,301 +71,312 @@ export default function LessonDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href={`/study-plans/${id}`}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Badge variant="outline">
-                Lesson {lessonIndex + 1} of {studyPlan.totalLessons}
-              </Badge>
-              {lesson.completed && (
-                <Badge className="gap-1">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Completed
+    <>
+      <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href={`/study-plans/${id}`}>
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline">
+                  Lesson {lessonIndex + 1} of {studyPlan.totalLessons}
                 </Badge>
-              )}
+                {lesson.completed && (
+                  <Badge className="gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Completed
+                  </Badge>
+                )}
+              </div>
+              <h1 className="text-3xl font-display font-bold">
+                {lesson.title}
+              </h1>
+              <p className="text-muted-foreground mt-1">{studyPlan.title}</p>
             </div>
-            <h1 className="text-3xl font-display font-bold">{lesson.title}</h1>
-            <p className="text-muted-foreground mt-1">{studyPlan.title}</p>
           </div>
+          <Button
+            variant={completed ? "outline" : "default"}
+            className="gap-2"
+            onClick={() => setShowQuiz(!showQuiz)}
+          >
+            <MessageCircle className="h-4 w-4" />
+            Ask AI Tutor
+          </Button>
         </div>
-        <Button
-          variant={completed ? "outline" : "default"}
-          className="gap-2"
-          onClick={() => setShowQuiz(!showQuiz)}
-        >
-          <MessageCircle className="h-4 w-4" />
-          Ask AI Tutor
-        </Button>
-      </div>
 
-      {/* Progress Bar */}
-      <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between text-sm mb-2">
-            <span className="font-medium">Study Plan Progress</span>
-            <span className="text-muted-foreground">
-              {lessonIndex + 1} / {studyPlan.totalLessons}
-            </span>
-          </div>
-          <Progress
-            value={((lessonIndex + 1) / studyPlan.totalLessons) * 100}
-            className="h-2"
-          />
-        </CardContent>
-      </Card>
+        {/* Progress Bar */}
+        <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="font-medium">Study Plan Progress</span>
+              <span className="text-muted-foreground">
+                {lessonIndex + 1} / {studyPlan.totalLessons}
+              </span>
+            </div>
+            <Progress
+              value={((lessonIndex + 1) / studyPlan.totalLessons) * 100}
+              className="h-2"
+            />
+          </CardContent>
+        </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Lesson Content */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                  Lesson Content
-                </CardTitle>
-                <Badge variant="outline" className="gap-1">
-                  <Clock className="h-3 w-3" />
-                  {lesson.duration} min
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="prose prose-sm max-w-none">
-              <div className="space-y-4">
-                {lesson.content.map((section, index) => (
-                  <div key={index}>
-                    <h3 className="text-lg font-semibold mb-2">
-                      {section.heading}
-                    </h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {section.text}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Example Box */}
-              {lesson.example && (
-                <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
-                  <h4 className="font-semibold mb-2 flex items-center gap-2">
-                    <Play className="h-4 w-4 text-primary" />
-                    ตัวอย่าง
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {lesson.example}
-                  </p>
-                </div>
-              )}
-
-              {/* Key Points */}
-              {lesson.keyPoints && lesson.keyPoints.length > 0 && (
-                <div className="mt-6 p-4 rounded-lg bg-accent/50 border">
-                  <h4 className="font-semibold mb-3">สรุปประเด็นสำคัญ</h4>
-                  <ul className="space-y-2">
-                    {lesson.keyPoints.map((point, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Quiz Section */}
-          {lesson.hasQuiz && (
-            <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Lesson Content */}
+            <Card>
               <CardHeader>
-                <CardTitle>แบบทดสอบ</CardTitle>
-                <CardDescription>
-                  ทดสอบความเข้าใจของคุณในบทเรียนนี้
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
                 <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      {lesson.quizQuestions} คำถาม • {lesson.quizDuration} นาที
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      คะแนนผ่าน: 70%
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    Lesson Content
+                  </CardTitle>
+                  <Badge variant="outline" className="gap-1">
+                    <Clock className="h-3 w-3" />
+                    {lesson.duration} min
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="prose prose-sm max-w-none">
+                <div className="space-y-4">
+                  {lesson.content.map((section, index) => (
+                    <div key={index}>
+                      <h3 className="text-lg font-semibold mb-2">
+                        {section.heading}
+                      </h3>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {section.text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Example Box */}
+                {lesson.example && (
+                  <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Play className="h-4 w-4 text-primary" />
+                      ตัวอย่าง
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {lesson.example}
                     </p>
                   </div>
-                  <Button onClick={handleStartQuiz} className="gap-2">
-                    <Play className="h-4 w-4" />
-                    เริ่มทำแบบทดสอบ
-                  </Button>
-                </div>
+                )}
+
+                {/* Key Points */}
+                {lesson.keyPoints && lesson.keyPoints.length > 0 && (
+                  <div className="mt-6 p-4 rounded-lg bg-accent/50 border">
+                    <h4 className="font-semibold mb-3">สรุปประเด็นสำคัญ</h4>
+                    <ul className="space-y-2">
+                      {lesson.keyPoints.map((point, idx) => (
+                        <li
+                          key={idx}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          )}
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between pt-4">
-            {prevLesson ? (
-              <Link href={`/study-plans/${id}/lesson/${prevLesson.id}`}>
-                <Button variant="outline" className="gap-2">
-                  <ChevronLeft className="h-4 w-4" />
-                  บทก่อนหน้า
+            {/* Quiz Section */}
+            {lesson.hasQuiz && (
+              <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardHeader>
+                  <CardTitle>แบบทดสอบ</CardTitle>
+                  <CardDescription>
+                    ทดสอบความเข้าใจของคุณในบทเรียนนี้
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">
+                        {lesson.quizQuestions} คำถาม • {lesson.quizDuration}{" "}
+                        นาที
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        คะแนนผ่าน: 70%
+                      </p>
+                    </div>
+                    <Button onClick={handleStartQuiz} className="gap-2">
+                      <Play className="h-4 w-4" />
+                      เริ่มทำแบบทดสอบ
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Navigation */}
+            <div className="flex items-center justify-between pt-4">
+              {prevLesson ? (
+                <Link href={`/study-plans/${id}/lesson/${prevLesson.id}`}>
+                  <Button variant="outline" className="gap-2">
+                    <ChevronLeft className="h-4 w-4" />
+                    บทก่อนหน้า
+                  </Button>
+                </Link>
+              ) : (
+                <div />
+              )}
+
+              {!completed && (
+                <Button onClick={handleComplete} className="gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  ทำเครื่องหมายว่าเสร็จสิ้น
                 </Button>
-              </Link>
-            ) : (
-              <div />
-            )}
+              )}
 
-            {!completed && (
-              <Button onClick={handleComplete} className="gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                ทำเครื่องหมายว่าเสร็จสิ้น
-              </Button>
-            )}
+              {completed && nextLesson && (
+                <Link href={`/study-plans/${id}/lesson/${nextLesson.id}`}>
+                  <Button className="gap-2">
+                    บทถัดไป
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
 
-            {completed && nextLesson && (
-              <Link href={`/study-plans/${id}/lesson/${nextLesson.id}`}>
-                <Button className="gap-2">
-                  บทถัดไป
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            )}
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Resources */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Learning Resources</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {lesson.resources.map((resource, index) => (
+                  <a
+                    key={index}
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                  >
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      {resource.type === "video" && (
+                        <Video className="h-5 w-5 text-primary" />
+                      )}
+                      {resource.type === "document" && (
+                        <FileText className="h-5 w-5 text-primary" />
+                      )}
+                      {resource.type === "link" && (
+                        <LinkIcon className="h-5 w-5 text-primary" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {resource.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {resource.type}
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link href={`/chat?context=lesson-${lessonId}`}>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Ask AI about this lesson
+                  </Button>
+                </Link>
+                <Link href={`/schedule?create=true&lesson=${lessonId}`}>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                  >
+                    <Clock className="h-4 w-4" />
+                    Schedule Review
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Lesson List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">All Lessons</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                {mockLessons.map((l, idx) => (
+                  <Link
+                    key={l.id}
+                    href={`/study-plans/${id}/lesson/${l.id}`}
+                    className={`flex items-center gap-2 p-2 rounded-lg text-sm transition-colors ${
+                      l.id === lessonId
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-accent"
+                    }`}
+                  >
+                    {l.completed ? (
+                      <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                    ) : (
+                      <div className="h-4 w-4 rounded-full border-2 flex-shrink-0" />
+                    )}
+                    <span className="flex-1 truncate">
+                      {idx + 1}. {l.title}
+                    </span>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Resources */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Learning Resources</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {lesson.resources.map((resource, index) => (
-                <a
-                  key={index}
-                  href={resource.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-all group"
-                >
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                    {resource.type === "video" && (
-                      <Video className="h-5 w-5 text-primary" />
-                    )}
-                    {resource.type === "document" && (
-                      <FileText className="h-5 w-5 text-primary" />
-                    )}
-                    {resource.type === "link" && (
-                      <LinkIcon className="h-5 w-5 text-primary" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {resource.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {resource.type}
-                    </p>
-                  </div>
-                </a>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Link href={`/chat?context=lesson-${lessonId}`}>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Ask AI about this lesson
-                </Button>
-              </Link>
-              <Link href={`/schedule?create=true&lesson=${lessonId}`}>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2"
-                >
-                  <Clock className="h-4 w-4" />
-                  Schedule Review
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          {/* Lesson List */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">All Lessons</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              {mockLessons.map((l, idx) => (
-                <Link
-                  key={l.id}
-                  href={`/study-plans/${id}/lesson/${l.id}`}
-                  className={`flex items-center gap-2 p-2 rounded-lg text-sm transition-colors ${
-                    l.id === lessonId
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-accent"
-                  }`}
-                >
-                  {l.completed ? (
-                    <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border-2 flex-shrink-0" />
-                  )}
-                  <span className="flex-1 truncate">
-                    {idx + 1}. {l.title}
-                  </span>
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+        {/* Completion Modal */}
+        {completed && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+            <Card className="w-full max-w-md m-4">
+              <CardContent className="pt-6 text-center space-y-4">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-display font-bold mb-2">
+                    เยี่ยมมาก! 🎉
+                  </h3>
+                  <p className="text-muted-foreground">
+                    คุณทำบทเรียนนี้เสร็จสิ้นแล้ว
+                  </p>
+                </div>
+                {nextLesson && (
+                  <p className="text-sm text-muted-foreground">
+                    กำลังไปยังบทเรียนถัดไป...
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
-      {/* Completion Modal */}
-      {completed && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
-          <Card className="w-full max-w-md m-4">
-            <CardContent className="pt-6 text-center space-y-4">
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-display font-bold mb-2">
-                  เยี่ยมมาก! 🎉
-                </h3>
-                <p className="text-muted-foreground">
-                  คุณทำบทเรียนนี้เสร็จสิ้นแล้ว
-                </p>
-              </div>
-              {nextLesson && (
-                <p className="text-sm text-muted-foreground">
-                  กำลังไปยังบทเรียนถัดไป...
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </div>
+      {/* AI Chat Sidebar */}
+      <ChatSidebar contextType="lesson" contextId={lessonId} />
+    </>
   );
 }
 

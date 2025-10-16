@@ -66,13 +66,15 @@ Browse and use pre-made study plan templates.
 
 ### 3. 🤖 AI Tutor Chat
 
-**Location**: `/chat`
+**Location**: `/chat` + **Chat Sidebar** in Study Plans & Lessons
 
 Intelligent AI tutoring powered by OpenAI's GPT-4.
 
 #### Features:
 
 - ✅ Real-time chat with AI tutor
+- ✅ **NEW: Chat Sidebar** - Slide-in chat panel from the right
+- ✅ **Context-Aware Chat** - AI knows what you're studying
 - ✅ Multiple teaching styles:
   - 🌟 Encouraging (supportive and positive)
   - 🤔 Socratic (question-based learning)
@@ -84,15 +86,35 @@ Intelligent AI tutoring powered by OpenAI's GPT-4.
 - ✅ Image upload support (planned)
 - ✅ Quick topic suggestions
 
-#### Unique Feature: **Text Highlight Chat**
+#### Unique Features:
+
+**1. Text Highlight Chat**
 
 - Highlight any text anywhere in the app
 - Instant popup to ask AI about the selected text
 - Context is automatically included in the chat
 
+**2. Chat Sidebar (NEW! 🎉)**
+
+- 💬 Floating chat button on Study Plans and Lesson pages
+- 📱 Slide-in sidebar from the right side
+- 🎯 Context-aware: AI knows if you're viewing a lesson or plan
+- ✨ Smooth animations with backdrop blur
+- 🔄 Open/Close with button or backdrop click
+- 💡 Quick suggestions based on context
+- 🤖 Typing indicator for AI responses
+- ⚡ Auto-scroll to latest messages
+
+**Where Chat Sidebar Appears**:
+
+- Study Plans List (`/study-plans`)
+- Study Plan Detail (`/study-plans/[id]`)
+- Lesson Detail (`/study-plans/[id]/lesson/[lessonId]`)
+
 **Implementation**:
 
-- `src/app/(dashboard)/chat/page.tsx` - Chat interface
+- `src/app/(dashboard)/chat/page.tsx` - Full chat interface
+- `src/components/chat/chat-sidebar.tsx` - **NEW: Chat sidebar component**
 - `src/components/chat/highlight-popup.tsx` - Highlight feature
 - `src/app/api/chat/route.ts` - OpenAI integration
 - `src/lib/openai.ts` - AI configuration
