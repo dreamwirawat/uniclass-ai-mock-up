@@ -243,3 +243,4 @@ This project is open source and available under the MIT License.
 ---
 
 Built with ❤️ using Next.js 15 and shadcn/ui
+# uniclass-ai-mock-up
