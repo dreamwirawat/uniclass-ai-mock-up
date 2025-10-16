@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import {
   Card,
   CardContent,
@@ -28,27 +28,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
     lessonId: string;
-  };
+  }>;
 }
 
 export default function LessonDetailPage({ params }: PageProps) {
+  const { id, lessonId } = use(params);
   const router = useRouter();
   const [completed, setCompleted] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
   // Mock data - in production, fetch based on params
-  const lesson =
-    mockLessons.find((l) => l.id === params.lessonId) || mockLessons[0];
+  const lesson = mockLessons.find((l) => l.id === lessonId) || mockLessons[0];
   const studyPlan = {
-    id: params.id,
+    id: id,
     title: "เตรียมสอบ IELTS ฉบับสมบูรณ์",
     totalLessons: 20,
   };
 
-  const lessonIndex = mockLessons.findIndex((l) => l.id === params.lessonId);
+  const lessonIndex = mockLessons.findIndex((l) => l.id === lessonId);
   const prevLesson = lessonIndex > 0 ? mockLessons[lessonIndex - 1] : null;
   const nextLesson =
     lessonIndex < mockLessons.length - 1 ? mockLessons[lessonIndex + 1] : null;
@@ -58,15 +58,15 @@ export default function LessonDetailPage({ params }: PageProps) {
     // In production, save progress to database
     setTimeout(() => {
       if (nextLesson) {
-        router.push(`/study-plans/${params.id}/lesson/${nextLesson.id}`);
+        router.push(`/study-plans/${id}/lesson/${nextLesson.id}`);
       } else {
-        router.push(`/study-plans/${params.id}`);
+        router.push(`/study-plans/${id}`);
       }
     }, 1500);
   };
 
   const handleStartQuiz = () => {
-    router.push(`/study-plans/${params.id}/lesson/${params.lessonId}/quiz`);
+    router.push(`/study-plans/${id}/lesson/${lessonId}/quiz`);
   };
 
   return (
@@ -74,7 +74,7 @@ export default function LessonDetailPage({ params }: PageProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href={`/study-plans/${params.id}`}>
+          <Link href={`/study-plans/${id}`}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -213,7 +213,7 @@ export default function LessonDetailPage({ params }: PageProps) {
           {/* Navigation */}
           <div className="flex items-center justify-between pt-4">
             {prevLesson ? (
-              <Link href={`/study-plans/${params.id}/lesson/${prevLesson.id}`}>
+              <Link href={`/study-plans/${id}/lesson/${prevLesson.id}`}>
                 <Button variant="outline" className="gap-2">
                   <ChevronLeft className="h-4 w-4" />
                   บทก่อนหน้า
@@ -231,7 +231,7 @@ export default function LessonDetailPage({ params }: PageProps) {
             )}
 
             {completed && nextLesson && (
-              <Link href={`/study-plans/${params.id}/lesson/${nextLesson.id}`}>
+              <Link href={`/study-plans/${id}/lesson/${nextLesson.id}`}>
                 <Button className="gap-2">
                   บทถัดไป
                   <ChevronRight className="h-4 w-4" />
@@ -287,7 +287,7 @@ export default function LessonDetailPage({ params }: PageProps) {
               <CardTitle className="text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Link href={`/chat?context=lesson-${params.lessonId}`}>
+              <Link href={`/chat?context=lesson-${lessonId}`}>
                 <Button
                   variant="outline"
                   className="w-full justify-start gap-2"
@@ -296,7 +296,7 @@ export default function LessonDetailPage({ params }: PageProps) {
                   Ask AI about this lesson
                 </Button>
               </Link>
-              <Link href={`/schedule?create=true&lesson=${params.lessonId}`}>
+              <Link href={`/schedule?create=true&lesson=${lessonId}`}>
                 <Button
                   variant="outline"
                   className="w-full justify-start gap-2"
@@ -317,9 +317,9 @@ export default function LessonDetailPage({ params }: PageProps) {
               {mockLessons.map((l, idx) => (
                 <Link
                   key={l.id}
-                  href={`/study-plans/${params.id}/lesson/${l.id}`}
+                  href={`/study-plans/${id}/lesson/${l.id}`}
                   className={`flex items-center gap-2 p-2 rounded-lg text-sm transition-colors ${
-                    l.id === params.lessonId
+                    l.id === lessonId
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-accent"
                   }`}

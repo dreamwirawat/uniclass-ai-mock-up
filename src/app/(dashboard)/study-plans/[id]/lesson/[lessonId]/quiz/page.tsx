@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import {
   Card,
   CardContent,
@@ -25,10 +25,10 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
     lessonId: string;
-  };
+  }>;
 }
 
 interface Question {
@@ -40,6 +40,7 @@ interface Question {
 }
 
 export default function QuizPage({ params }: PageProps) {
+  const { id, lessonId } = use(params);
   const router = useRouter();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{
@@ -201,7 +202,7 @@ export default function QuizPage({ params }: PageProps) {
     return (
       <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
         <div className="flex items-center gap-4">
-          <Link href={`/study-plans/${params.id}/lesson/${params.lessonId}`}>
+          <Link href={`/study-plans/${id}/lesson/${lessonId}`}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -261,7 +262,7 @@ export default function QuizPage({ params }: PageProps) {
             <RefreshCw className="h-4 w-4" />
             ลองใหม่อีกครั้ง
           </Button>
-          <Link href={`/study-plans/${params.id}/lesson/${params.lessonId}`}>
+          <Link href={`/study-plans/${id}/lesson/${lessonId}`}>
             <Button className="gap-2">กลับไปยังบทเรียน</Button>
           </Link>
         </div>
@@ -341,7 +342,7 @@ export default function QuizPage({ params }: PageProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href={`/study-plans/${params.id}/lesson/${params.lessonId}`}>
+          <Link href={`/study-plans/${id}/lesson/${lessonId}`}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-4 w-4" />
             </Button>

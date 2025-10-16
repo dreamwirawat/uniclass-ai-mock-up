@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -24,26 +24,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function StudyPlanDetailPage({ params }: PageProps) {
+  const { id } = use(params);
   const router = useRouter();
   const [plan, setPlan] = useState<any>(null);
 
   useEffect(() => {
     // Try to load from localStorage first
     const savedPlans = JSON.parse(localStorage.getItem("studyPlans") || "[]");
-    const savedPlan = savedPlans.find((p: any) => p.id === params.id);
+    const savedPlan = savedPlans.find((p: any) => p.id === id);
 
     if (savedPlan) {
       setPlan(savedPlan);
     } else {
       // Use mock data if not found
       setPlan({
-        id: params.id,
+        id: id,
         title: "เตรียมสอบ IELTS ฉบับสมบูรณ์",
         description: "การเตรียมสอบ IELTS แบบครอบคลุมทั้ง 4 ทักษะ",
         category: "ภาษา",
@@ -53,10 +54,10 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
         estimatedHours: 40,
       });
     }
-  }, [params.id]);
+  }, [id]);
 
   const handleStartLesson = (lessonId: string) => {
-    router.push(`/study-plans/${params.id}/lesson/${lessonId}`);
+    router.push(`/study-plans/${id}/lesson/${lessonId}`);
   };
 
   const handleContinueLearning = () => {
@@ -66,9 +67,7 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
       inProgressLesson || mockLessons.find((l) => !l.completed);
 
     if (firstIncompleteLesson) {
-      router.push(
-        `/study-plans/${params.id}/lesson/${firstIncompleteLesson.id}`
-      );
+      router.push(`/study-plans/${id}/lesson/${firstIncompleteLesson.id}`);
     }
   };
 
