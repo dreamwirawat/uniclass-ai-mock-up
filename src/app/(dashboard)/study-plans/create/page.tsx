@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -121,12 +121,36 @@ export default function CreateStudyPlanPage() {
 
   const handleSave = () => {
     // In production, save to database
-    console.log("Saving study plan:", {
+    if (!planTitle.trim()) {
+      alert("กรุณาใส่ชื่อ Study Plan");
+      return;
+    }
+
+    // Mock: Generate ID and save
+    const newPlanId = Date.now().toString();
+    const newPlan = {
+      id: newPlanId,
       title: planTitle,
       description: planDescription,
       category,
       lessons,
-    });
+      progress: 0,
+      created_at: new Date().toISOString(),
+    };
+
+    console.log("Saving study plan:", newPlan);
+
+    // Mock: Save to localStorage
+    const existingPlans = JSON.parse(
+      localStorage.getItem("studyPlans") || "[]"
+    );
+    localStorage.setItem(
+      "studyPlans",
+      JSON.stringify([...existingPlans, newPlan])
+    );
+
+    // Redirect to the new study plan
+    window.location.href = `/study-plans/${newPlanId}`;
   };
 
   return (

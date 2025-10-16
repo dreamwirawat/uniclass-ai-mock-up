@@ -13,12 +13,86 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, Bot, Bell, Palette, Shield, Save, Camera } from "lucide-react";
-import { useState } from "react";
+import {
+  User,
+  Bot,
+  Bell,
+  Palette,
+  Shield,
+  Save,
+  Camera,
+  CheckCircle2,
+} from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
   const [teachingStyle, setTeachingStyle] = useState("encouraging");
   const [aiModel, setAiModel] = useState("gpt-4");
+  const [name, setName] = useState("Student Name");
+  const [email, setEmail] = useState("student@uniclass.ai");
+  const [bio, setBio] = useState(
+    "Passionate learner focused on IELTS and programming"
+  );
+  const [theme, setTheme] = useState("light");
+  const [notificationStates, setNotificationStates] = useState<{
+    [key: string]: boolean;
+  }>({
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": false,
+  });
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    // Load settings from localStorage
+    const savedSettings = localStorage.getItem("userSettings");
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      setName(settings.name || name);
+      setEmail(settings.email || email);
+      setBio(settings.bio || bio);
+      setTeachingStyle(settings.teachingStyle || teachingStyle);
+      setAiModel(settings.aiModel || aiModel);
+      setTheme(settings.theme || theme);
+      setNotificationStates(settings.notifications || notificationStates);
+    }
+  }, []);
+
+  const handleSaveProfile = () => {
+    const settings = {
+      name,
+      email,
+      bio,
+      teachingStyle,
+      aiModel,
+      theme,
+      notifications: notificationStates,
+      updated_at: new Date().toISOString(),
+    };
+    localStorage.setItem("userSettings", JSON.stringify(settings));
+    showSuccessMessage();
+  };
+
+  const handleSaveAI = () => {
+    const settings = JSON.parse(localStorage.getItem("userSettings") || "{}");
+    settings.teachingStyle = teachingStyle;
+    settings.aiModel = aiModel;
+    localStorage.setItem("userSettings", JSON.stringify(settings));
+    showSuccessMessage();
+  };
+
+  const toggleNotification = (id: string) => {
+    setNotificationStates((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const showSuccessMessage = () => {
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
+  };
 
   return (
     <div className="space-y-8 animate-fade-in max-w-4xl">
@@ -80,14 +154,19 @@ export default function SettingsPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" defaultValue="Student Name" />
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    defaultValue="student@uniclass.ai"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </div>
@@ -97,11 +176,12 @@ export default function SettingsPage() {
                 <Input
                   id="bio"
                   placeholder="Tell us about yourself..."
-                  defaultValue="Passionate learner focused on IELTS and programming"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
                 />
               </div>
 
-              <Button className="gap-2">
+              <Button className="gap-2" onClick={handleSaveProfile}>
                 <Save className="h-4 w-4" />
                 Save Changes
               </Button>
@@ -232,7 +312,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleSaveAI}>
             <Save className="h-4 w-4" />
             Save AI Settings
           </Button>
@@ -259,8 +339,12 @@ export default function SettingsPage() {
                       {setting.description}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
-                    {setting.enabled ? "On" : "Off"}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => toggleNotification(setting.id)}
+                  >
+                    {notificationStates[setting.id] ? "On" : "Off"}
                   </Button>
                 </div>
               ))}
@@ -279,23 +363,62 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="p-4 rounded-lg border-2 border-primary bg-primary/5 cursor-pointer">
+                <div
+                  className={`p-4 rounded-lg border-2 cursor-pointer ${
+                    theme === "light"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                  onClick={() => setTheme("light")}
+                >
                   <div className="h-20 rounded-md bg-gradient-to-br from-background to-muted mb-3" />
                   <p className="font-medium text-sm">Light</p>
                 </div>
-                <div className="p-4 rounded-lg border-2 border-border hover:border-primary/50 cursor-pointer">
+                <div
+                  className={`p-4 rounded-lg border-2 cursor-pointer ${
+                    theme === "dark"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                  onClick={() => setTheme("dark")}
+                >
                   <div className="h-20 rounded-md bg-gradient-to-br from-gray-900 to-gray-800 mb-3" />
                   <p className="font-medium text-sm">Dark</p>
                 </div>
-                <div className="p-4 rounded-lg border-2 border-border hover:border-primary/50 cursor-pointer">
+                <div
+                  className={`p-4 rounded-lg border-2 cursor-pointer ${
+                    theme === "auto"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                  onClick={() => setTheme("auto")}
+                >
                   <div className="h-20 rounded-md bg-gradient-to-br from-background to-gray-800 mb-3" />
                   <p className="font-medium text-sm">Auto</p>
                 </div>
               </div>
+              <Button className="gap-2" onClick={handleSaveProfile}>
+                <Save className="h-4 w-4" />
+                Save Theme
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Success Message */}
+      {showSuccess && (
+        <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+          <Card className="border-primary shadow-lg">
+            <CardContent className="pt-4 flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+              </div>
+              <p className="font-medium">Settings saved successfully!</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

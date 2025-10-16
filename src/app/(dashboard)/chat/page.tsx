@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -24,18 +25,33 @@ interface Message {
 }
 
 export default function ChatPage() {
+  const searchParams = useSearchParams();
+  const context = searchParams.get("context");
+
+  // Determine context message based on URL params
+  const getInitialMessage = () => {
+    if (context?.startsWith("lesson-")) {
+      const lessonId = context.replace("lesson-", "");
+      return `สวัสดีค่ะ! ฉันเห็นว่าคุณกำลังเรียนบทเรียนนี้อยู่ ฉันพร้อมช่วยเหลือคุณในการทำความเข้าใจเนื้อหา! มีอะไรที่คุณต้องการถามเกี่ยวกับบทเรียนนี้ไหมคะ?`;
+    }
+    if (context?.startsWith("plan-")) {
+      return `สวัสดีค่ะ! ฉันเห็นว่าคุณกำลังดู Study Plan นี้ ต้องการคำแนะนำหรือความช่วยเหลืออะไรไหมคะ?`;
+    }
+    return "สวัสดีค่ะ! ฉันคือติวเตอร์ AI ของคุณ ฉันพร้อมช่วยเหลือคุณในการเรียนรู้ คุณสามารถถามอะไรฉันก็ได้ หรือไฮไลต์ข้อความใดๆ เพื่อรับคำอธิบายทันทีค่ะ!";
+  };
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       role: "assistant",
-      content:
-        "สวัสดีค่ะ! ฉันคือติวเตอร์ AI ของคุณ ฉันพร้อมช่วยเหลือคุณในการเรียนรู้ คุณสามารถถามอะไรฉันก็ได้ หรือไฮไลต์ข้อความใดๆ เพื่อรับคำอธิบายทันทีค่ะ!",
+      content: getInitialMessage(),
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [currentContext, setCurrentContext] = useState(context);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,12 +75,24 @@ export default function ChatPage() {
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI response
+    // Simulate AI response with context awareness
     setTimeout(() => {
+      let contextualResponse = `ฉันเข้าใจว่าคุณกำลังถามเกี่ยวกับ "${input}" `;
+
+      if (currentContext?.startsWith("lesson-")) {
+        contextualResponse += `ในบทเรียนนี้ ให้ฉันช่วยอธิบายให้ชัดเจนนะคะ...\n\n`;
+      } else if (currentContext?.startsWith("plan-")) {
+        contextualResponse += `สำหรับ Study Plan ของคุณ ให้ฉันช่วยวางแผนการเรียนนะคะ...\n\n`;
+      } else {
+        contextualResponse += `ให้ฉันช่วยคุณนะคะ...\n\n`;
+      }
+
+      contextualResponse += `นี่คือการตอบกลับแบบจำลอง ในระบบจริงจะเชื่อมต่อกับ OpenAI API เพื่อให้คำตอบที่ชาญฉลาดและตรงตามบริบทของคำถามและการเรียนรู้ของคุณค่ะ`;
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `ฉันเข้าใจว่าคุณกำลังถามเกี่ยวกับ "${input}" ให้ฉันช่วยคุณนะคะ...\n\nนี่คือการตอบกลับแบบจำลอง ในระบบจริงจะเชื่อมต่อกับ OpenAI API เพื่อให้คำตอบที่ชาญฉลาดและตรงตามบริบทของคำถามและการเรียนรู้ของคุณค่ะ`,
+        content: contextualResponse,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
@@ -90,6 +118,13 @@ export default function ChatPage() {
                 <CardTitle className="flex items-center gap-2">
                   <Bot className="h-5 w-5 text-primary" />
                   AI Tutor Chat
+                  {currentContext && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {currentContext.startsWith("lesson-")
+                        ? "In Lesson"
+                        : "In Study Plan"}
+                    </Badge>
+                  )}
                 </CardTitle>
                 <CardDescription>
                   Ask questions or highlight text for instant help

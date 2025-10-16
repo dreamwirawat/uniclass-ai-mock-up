@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,9 +12,70 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Star, Download, Eye, TrendingUp } from "lucide-react";
+import {
+  Search,
+  Star,
+  Download,
+  Eye,
+  TrendingUp,
+  CheckCircle2,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function MarketplacePage() {
+  const router = useRouter();
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleUseTemplate = (template: any) => {
+    setSelectedTemplate(template);
+    setShowDialog(true);
+  };
+
+  const confirmUseTemplate = () => {
+    if (!selectedTemplate) return;
+
+    // Create a new study plan from template
+    const newPlanId = Date.now().toString();
+    const newPlan = {
+      id: newPlanId,
+      title: selectedTemplate.title,
+      description: selectedTemplate.description,
+      category: selectedTemplate.category,
+      is_template: false,
+      lessonsCount: selectedTemplate.lessonsCount,
+      estimatedHours: selectedTemplate.estimatedHours,
+      progress: 0,
+      created_at: new Date().toISOString(),
+    };
+
+    // Save to localStorage
+    const existingPlans = JSON.parse(
+      localStorage.getItem("studyPlans") || "[]"
+    );
+    localStorage.setItem(
+      "studyPlans",
+      JSON.stringify([...existingPlans, newPlan])
+    );
+
+    // Update download count (mock)
+    setShowDialog(false);
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      router.push(`/study-plans/${newPlanId}`);
+    }, 1500);
+  };
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -111,7 +175,12 @@ export default function MarketplacePage() {
               </CardContent>
 
               <CardFooter className="gap-2">
-                <Button className="flex-1">Use Template</Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => handleUseTemplate(template)}
+                >
+                  Use Template
+                </Button>
                 <Button variant="outline" size="icon">
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -145,14 +214,76 @@ export default function MarketplacePage() {
               </CardHeader>
 
               <CardFooter>
-                <Button variant="outline" className="w-full">
-                  View Details
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleUseTemplate(template)}
+                >
+                  Use Template
                 </Button>
               </CardFooter>
             </Card>
           ))}
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ใช้ Template นี้</DialogTitle>
+            <DialogDescription>
+              คุณต้องการสร้าง Study Plan จาก template นี้หรือไม่?
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTemplate && (
+            <div className="space-y-3">
+              <div>
+                <h4 className="font-semibold">{selectedTemplate.title}</h4>
+                <p className="text-sm text-muted-foreground">
+                  {selectedTemplate.description}
+                </p>
+              </div>
+              <div className="flex gap-4 text-sm">
+                <Badge variant="outline">{selectedTemplate.category}</Badge>
+                <span className="text-muted-foreground">
+                  {selectedTemplate.lessonsCount} บทเรียน
+                </span>
+                <span className="text-muted-foreground">
+                  ~{selectedTemplate.estimatedHours} ชั่วโมง
+                </span>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>
+              ยกเลิก
+            </Button>
+            <Button onClick={confirmUseTemplate}>ยืนยัน</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Message */}
+      {showSuccess && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+          <Card className="w-full max-w-md m-4">
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-display font-bold mb-2">
+                  สร้าง Study Plan สำเร็จ! 🎉
+                </h3>
+                <p className="text-muted-foreground">
+                  กำลังพาคุณไปยัง Study Plan...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

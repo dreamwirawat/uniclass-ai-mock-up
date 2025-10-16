@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,8 +14,30 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Plus, BookOpen, Clock, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { getStudyPlans, initializeDefaultData } from "@/lib/storage";
 
 export default function StudyPlansPage() {
+  const [plans, setPlans] = useState<any[]>([]);
+  const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    initializeDefaultData();
+    loadPlans();
+  }, []);
+
+  const loadPlans = () => {
+    const allPlans = getStudyPlans();
+    setPlans(allPlans);
+  };
+
+  const filteredPlans = plans.filter((plan) => {
+    if (filter === "all") return true;
+    if (filter === "in-progress")
+      return plan.progress > 0 && plan.progress < 100;
+    if (filter === "completed") return plan.progress === 100;
+    if (filter === "templates") return plan.is_template;
+    return true;
+  });
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -35,23 +60,40 @@ export default function StudyPlansPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm">
-          All Plans
+        <Button
+          variant={filter === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilter("all")}
+        >
+          All Plans ({plans.length})
         </Button>
-        <Button variant="ghost" size="sm">
-          In Progress
+        <Button
+          variant={filter === "in-progress" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setFilter("in-progress")}
+        >
+          In Progress (
+          {plans.filter((p) => p.progress > 0 && p.progress < 100).length})
         </Button>
-        <Button variant="ghost" size="sm">
-          Completed
+        <Button
+          variant={filter === "completed" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setFilter("completed")}
+        >
+          Completed ({plans.filter((p) => p.progress === 100).length})
         </Button>
-        <Button variant="ghost" size="sm">
-          Templates
+        <Button
+          variant={filter === "templates" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setFilter("templates")}
+        >
+          Templates ({plans.filter((p) => p.is_template).length})
         </Button>
       </div>
 
       {/* Study Plans Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {mockPlans.map((plan) => (
+        {filteredPlans.map((plan) => (
           <Card
             key={plan.id}
             className="flex flex-col hover:shadow-lg transition-shadow"
@@ -146,62 +188,3 @@ export default function StudyPlansPage() {
     </div>
   );
 }
-
-// Mock data
-const mockPlans = [
-  {
-    id: "1",
-    title: "เตรียมสอบ IELTS ฉบับสมบูรณ์",
-    description:
-      "การเตรียมสอบ IELTS แบบครอบคลุมทั้ง 4 ทักษะ: อ่าน เขียน ฟัง และพูด พร้อมเทคนิคและแนวข้อสอบจริง",
-    category: "ภาษา",
-    lessonsCount: 20,
-    estimatedHours: 40,
-    progress: 60,
-    is_template: false,
-  },
-  {
-    id: "2",
-    title: "พัฒนาเว็บไซต์แบบ Full-Stack",
-    description:
-      "เรียนรู้ HTML, CSS, JavaScript, React, Node.js และฐานข้อมูล เพื่อเป็นนักพัฒนาเว็บ Full-Stack",
-    category: "โปรแกรมมิ่ง",
-    lessonsCount: 35,
-    estimatedHours: 80,
-    progress: 45,
-    is_template: false,
-  },
-  {
-    id: "3",
-    title: "โครงสร้างข้อมูลและอัลกอริทึม",
-    description:
-      "เชี่ยวชาญโครงสร้างข้อมูลและอัลกอริทึมพื้นฐานสำหรับสัมภาษณ์งานและการแข่งขันเขียนโปรแกรม",
-    category: "วิทยาการคอมพิวเตอร์",
-    lessonsCount: 25,
-    estimatedHours: 50,
-    progress: 20,
-    is_template: false,
-  },
-  {
-    id: "4",
-    title: "ภาษาอังกฤษธุรกิจเชิงลึก",
-    description:
-      "ภาษาอังกฤษระดับมืออาชีพสำหรับการสื่อสารทางธุรกิจ การนำเสนอ และการประชุม",
-    category: "ภาษา",
-    lessonsCount: 15,
-    estimatedHours: 25,
-    progress: 0,
-    is_template: true,
-  },
-  {
-    id: "5",
-    title: "Python สำหรับ Data Science",
-    description:
-      "เรียนรู้การเขียนโปรแกรม Python เน้นการวิเคราะห์ข้อมูล pandas, numpy และการแสดงผลข้อมูล",
-    category: "โปรแกรมมิ่ง",
-    lessonsCount: 30,
-    estimatedHours: 60,
-    progress: 80,
-    is_template: false,
-  },
-];

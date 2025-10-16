@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,6 +21,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface PageProps {
   params: {
@@ -26,17 +30,51 @@ interface PageProps {
 }
 
 export default function StudyPlanDetailPage({ params }: PageProps) {
-  // In production, fetch plan data based on params.id
-  const plan = {
-    id: params.id,
-    title: "เตรียมสอบ IELTS ฉบับสมบูรณ์",
-    description: "การเตรียมสอบ IELTS แบบครอบคลุมทั้ง 4 ทักษะ",
-    category: "ภาษา",
-    progress: 60,
-    totalLessons: 20,
-    completedLessons: 12,
-    estimatedHours: 40,
+  const router = useRouter();
+  const [plan, setPlan] = useState<any>(null);
+
+  useEffect(() => {
+    // Try to load from localStorage first
+    const savedPlans = JSON.parse(localStorage.getItem("studyPlans") || "[]");
+    const savedPlan = savedPlans.find((p: any) => p.id === params.id);
+
+    if (savedPlan) {
+      setPlan(savedPlan);
+    } else {
+      // Use mock data if not found
+      setPlan({
+        id: params.id,
+        title: "เตรียมสอบ IELTS ฉบับสมบูรณ์",
+        description: "การเตรียมสอบ IELTS แบบครอบคลุมทั้ง 4 ทักษะ",
+        category: "ภาษา",
+        progress: 60,
+        totalLessons: 20,
+        completedLessons: 12,
+        estimatedHours: 40,
+      });
+    }
+  }, [params.id]);
+
+  const handleStartLesson = (lessonId: string) => {
+    router.push(`/study-plans/${params.id}/lesson/${lessonId}`);
   };
+
+  const handleContinueLearning = () => {
+    // Find first incomplete lesson
+    const inProgressLesson = mockLessons.find((l) => l.inProgress);
+    const firstIncompleteLesson =
+      inProgressLesson || mockLessons.find((l) => !l.completed);
+
+    if (firstIncompleteLesson) {
+      router.push(
+        `/study-plans/${params.id}/lesson/${firstIncompleteLesson.id}`
+      );
+    }
+  };
+
+  if (!plan) {
+    return <div className="animate-fade-in">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -57,7 +95,7 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
               <CardTitle className="text-3xl">{plan.title}</CardTitle>
               <CardDescription>{plan.description}</CardDescription>
             </div>
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={handleContinueLearning}>
               <Play className="h-4 w-4" />
               Continue Learning
             </Button>
@@ -110,6 +148,7 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
             {mockLessons.map((lesson, index) => (
               <div
                 key={lesson.id}
+                onClick={() => handleStartLesson(lesson.id)}
                 className="flex items-center gap-4 p-4 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer group"
               >
                 <div className="flex-shrink-0">
@@ -154,6 +193,10 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
                   <Button
                     size="sm"
                     variant={lesson.completed ? "outline" : "default"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStartLesson(lesson.id);
+                    }}
                   >
                     {lesson.completed
                       ? "Review"
@@ -161,9 +204,14 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
                       ? "Continue"
                       : "Start"}
                   </Button>
-                  <Button size="sm" variant="ghost">
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
+                  <Link
+                    href={`/chat?context=lesson-${lesson.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button size="sm" variant="ghost">
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             ))}

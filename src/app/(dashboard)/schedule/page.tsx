@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -12,13 +13,37 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const days = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
 const hours = Array.from({ length: 14 }, (_, i) => i + 8); // 8 AM to 9 PM
 
 export default function SchedulePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const shouldCreate = searchParams.get("create");
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<"week" | "month">("week");
+  const [savedSessions, setSavedSessions] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Load saved sessions from localStorage
+    const sessions = JSON.parse(
+      localStorage.getItem("scheduleSessions") || "[]"
+    );
+    setSavedSessions(sessions);
+
+    // If create param is present, redirect to create page
+    if (shouldCreate === "true") {
+      const lesson = searchParams.get("lesson");
+      const plan = searchParams.get("plan");
+      const params = new URLSearchParams();
+      if (lesson) params.set("lesson", lesson);
+      if (plan) params.set("plan", plan);
+      router.push(`/schedule/create?${params.toString()}`);
+    }
+  }, [shouldCreate, searchParams, router]);
 
   const getWeekDates = () => {
     const week = [];
@@ -58,10 +83,12 @@ export default function SchedulePage() {
             Plan and track your study sessions
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Session
-        </Button>
+        <Link href="/schedule/create">
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Session
+          </Button>
+        </Link>
       </div>
 
       {/* Calendar Controls */}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -19,8 +20,24 @@ import {
   CheckCircle2,
   Calendar,
 } from "lucide-react";
+import {
+  getStudyPlans,
+  getUserStatistics,
+  initializeDefaultData,
+} from "@/lib/storage";
+import Link from "next/link";
 
 export default function ProgressPage() {
+  const [stats, setStats] = useState<any>(null);
+  const [plans, setPlans] = useState<any[]>([]);
+
+  useEffect(() => {
+    initializeDefaultData();
+    const statistics = getUserStatistics();
+    const studyPlans = getStudyPlans();
+    setStats(statistics);
+    setPlans(studyPlans);
+  }, []);
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -32,65 +49,75 @@ export default function ProgressPage() {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-primary/50 bg-gradient-to-br from-primary/10 to-accent/10">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Current Streak
-            </CardTitle>
-            <Flame className="h-5 w-5 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-display font-bold text-primary">
-              7 days
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Longest: 14 days
-            </p>
-          </CardContent>
-        </Card>
+      {stats && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-primary/50 bg-gradient-to-br from-primary/10 to-accent/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Current Streak
+              </CardTitle>
+              <Flame className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-display font-bold text-primary">
+                {stats.currentStreak} days
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Longest: {stats.longestStreak} days
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Study Time
-            </CardTitle>
-            <Clock className="h-5 w-5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-display font-bold">124.5h</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              +12.5h this week
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Study Time
+              </CardTitle>
+              <Clock className="h-5 w-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-display font-bold">
+                {stats.totalHours.toFixed(1)}h
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Across all plans
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Lessons Completed
-            </CardTitle>
-            <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-display font-bold">45</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Out of 80 total
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Lessons Completed
+              </CardTitle>
+              <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-display font-bold">
+                {stats.completedLessons}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Out of {stats.totalLessons} total
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-            <Award className="h-5 w-5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-display font-bold">87%</div>
-            <p className="text-xs text-muted-foreground mt-1">On quizzes</p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Average Score
+              </CardTitle>
+              <Award className="h-5 w-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-display font-bold">
+                {stats.averageScore}%
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">On quizzes</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Tabs for different views */}
       <Tabs defaultValue="overview" className="space-y-4">
@@ -201,37 +228,45 @@ export default function ProgressPage() {
         </TabsContent>
 
         <TabsContent value="plans" className="space-y-4">
-          {studyPlanProgress.map((plan) => (
-            <Card key={plan.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle>{plan.title}</CardTitle>
-                    <CardDescription>{plan.category}</CardDescription>
+          {plans.map((plan) => (
+            <Link key={plan.id} href={`/study-plans/${plan.id}`}>
+              <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle>{plan.title}</CardTitle>
+                      <CardDescription>{plan.category}</CardDescription>
+                    </div>
+                    <Badge>{plan.progress}%</Badge>
                   </div>
-                  <Badge>{plan.progress}%</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Progress value={plan.progress} />
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Completed</p>
-                    <p className="font-bold">
-                      {plan.completed}/{plan.total}
-                    </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Progress value={plan.progress} />
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Completed</p>
+                      <p className="font-bold">
+                        {plan.completedLessons}/{plan.lessonsCount}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Est. Duration</p>
+                      <p className="font-bold">{plan.estimatedHours}h</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Status</p>
+                      <p className="font-bold">
+                        {plan.progress === 100
+                          ? "Done"
+                          : plan.progress > 0
+                          ? "Active"
+                          : "Not Started"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground">Time Spent</p>
-                    <p className="font-bold">{plan.timeSpent}h</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Avg Score</p>
-                    <p className="font-bold">{plan.avgScore}%</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </TabsContent>
 
