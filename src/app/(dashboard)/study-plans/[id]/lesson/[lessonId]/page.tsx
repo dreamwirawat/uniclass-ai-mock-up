@@ -40,6 +40,7 @@ export default function LessonDetailPage({ params }: PageProps) {
   const router = useRouter();
   const [completed, setCompleted] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(true);
 
   // Mock data - in production, fetch based on params
   const lesson = mockLessons.find((l) => l.id === lessonId) || mockLessons[0];
@@ -101,6 +102,14 @@ export default function LessonDetailPage({ params }: PageProps) {
               </p>
             </div>
           </div>
+          <Button
+            variant={showAIChat ? "default" : "outline"}
+            className="gap-2"
+            onClick={() => setShowAIChat(!showAIChat)}
+          >
+            <MessageCircle className="h-4 w-4" />
+            {showAIChat ? "ซ่อน AI Tutor" : "แสดง AI Tutor"}
+          </Button>
         </div>
 
         {/* Progress Bar */}
@@ -225,21 +234,23 @@ export default function LessonDetailPage({ params }: PageProps) {
                 <div />
               )}
 
-              {!completed && (
-                <Button onClick={handleComplete} className="gap-2">
-                  <CheckCircle2 className="h-4 w-4" />
-                  ทำเครื่องหมายว่าเสร็จสิ้น
-                </Button>
-              )}
-
-              {completed && nextLesson && (
-                <Link href={`/study-plans/${id}/lesson/${nextLesson.id}`}>
-                  <Button className="gap-2">
-                    บทถัดไป
-                    <ChevronRight className="h-4 w-4" />
+              <div className="flex gap-2">
+                {!lesson.completed && !completed && (
+                  <Button onClick={handleComplete} className="gap-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    ทำเครื่องหมายว่าเสร็จสิ้น
                   </Button>
-                </Link>
-              )}
+                )}
+
+                {(lesson.completed || completed) && nextLesson && (
+                  <Link href={`/study-plans/${id}/lesson/${nextLesson.id}`}>
+                    <Button className="gap-2">
+                      บทถัดไป
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
 
@@ -368,16 +379,18 @@ export default function LessonDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* AI Chat Sidebar - Always Visible */}
-      <div className="w-96 flex-shrink-0">
-        <ChatSidebar
-          mode="inline"
-          contextType="lesson"
-          contextId={lessonId}
-          isOpen={true}
-          onOpenChange={() => {}}
-        />
-      </div>
+      {/* AI Chat Sidebar - Toggleable */}
+      {showAIChat && (
+        <div className="w-96 flex-shrink-0 animate-in slide-in-from-right duration-300">
+          <ChatSidebar
+            mode="inline"
+            contextType="lesson"
+            contextId={lessonId}
+            isOpen={showAIChat}
+            onOpenChange={setShowAIChat}
+          />
+        </div>
+      )}
     </div>
   );
 }

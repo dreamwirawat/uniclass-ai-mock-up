@@ -16,8 +16,20 @@ import { Plus, BookOpen, Clock, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { getStudyPlans, initializeDefaultData } from "@/lib/storage";
 
+interface StudyPlan {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  progress: number;
+  lessonsCount: number;
+  estimatedHours: number;
+  is_template?: boolean;
+  completedLessons?: number;
+}
+
 export default function StudyPlansPage() {
-  const [plans, setPlans] = useState<any[]>([]);
+  const [plans, setPlans] = useState<StudyPlan[]>([]);
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
@@ -100,10 +112,31 @@ export default function StudyPlansPage() {
           >
             <CardHeader>
               <div className="flex items-start justify-between mb-2">
-                <Badge variant={plan.is_template ? "secondary" : "default"}>
-                  {plan.is_template ? "Template" : plan.category}
-                </Badge>
-                <span className="text-sm text-muted-foreground">
+                <div className="flex gap-2 flex-wrap">
+                  <Badge
+                    variant={
+                      plan.is_template
+                        ? "secondary"
+                        : plan.progress === 100
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    {plan.is_template ? "Template" : plan.category}
+                  </Badge>
+                  {!plan.is_template && plan.progress === 100 && (
+                    <Badge variant="default" className="gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Completed
+                    </Badge>
+                  )}
+                  {!plan.is_template &&
+                    plan.progress > 0 &&
+                    plan.progress < 100 && (
+                      <Badge variant="secondary">In Progress</Badge>
+                    )}
+                </div>
+                <span className="text-sm text-muted-foreground flex-shrink-0">
                   {plan.lessonsCount} lessons
                 </span>
               </div>
@@ -157,13 +190,22 @@ export default function StudyPlansPage() {
 
             <CardFooter className="gap-2">
               <Link href={`/study-plans/${plan.id}`} className="flex-1">
-                <Button variant="default" className="w-full">
-                  Continue Learning
+                <Button
+                  variant={plan.progress === 100 ? "outline" : "default"}
+                  className="w-full gap-2"
+                >
+                  {plan.progress === 100 ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      Review Plan
+                    </>
+                  ) : plan.progress > 0 ? (
+                    "Continue Learning"
+                  ) : (
+                    "Start Learning"
+                  )}
                 </Button>
               </Link>
-              <Button variant="outline" size="icon">
-                <BookOpen className="h-4 w-4" />
-              </Button>
             </CardFooter>
           </Card>
         ))}

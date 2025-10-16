@@ -71,6 +71,10 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
     }
   };
 
+  // Check if there are any incomplete lessons
+  const hasIncompleteLessons = mockLessons.some((l) => !l.completed);
+  const allLessonsCompleted = mockLessons.every((l) => l.completed);
+
   if (!plan) {
     return <div className="animate-fade-in">Loading...</div>;
   }
@@ -90,14 +94,28 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <Badge>{plan.category}</Badge>
+              <Badge variant={allLessonsCompleted ? "default" : "outline"}>
+                {allLessonsCompleted ? "✓ " : ""}
+                {plan.category}
+              </Badge>
               <CardTitle className="text-2xl">{plan.title}</CardTitle>
               <CardDescription>{plan.description}</CardDescription>
             </div>
-            <Button className="gap-2" onClick={handleContinueLearning}>
-              <Play className="h-4 w-4" />
-              Continue Learning
-            </Button>
+            {hasIncompleteLessons ? (
+              <Button className="gap-2" onClick={handleContinueLearning}>
+                <Play className="h-4 w-4" />
+                Continue Learning
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={handleContinueLearning}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Review Plan
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -167,6 +185,17 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
                     <span className="text-xs text-muted-foreground">
                       Lesson {index + 1}
                     </span>
+                    {lesson.completed && (
+                      <Badge variant="default" className="text-xs gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Completed
+                      </Badge>
+                    )}
+                    {lesson.inProgress && !lesson.completed && (
+                      <Badge variant="secondary" className="text-xs">
+                        In Progress
+                      </Badge>
+                    )}
                     {lesson.hasQuiz && (
                       <Badge variant="outline" className="text-xs">
                         Quiz
@@ -188,10 +217,16 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-shrink-0">
                   <Button
                     size="sm"
-                    variant={lesson.completed ? "outline" : "default"}
+                    variant={
+                      lesson.completed
+                        ? "outline"
+                        : lesson.inProgress
+                        ? "default"
+                        : "secondary"
+                    }
                     onClick={(e) => {
                       e.stopPropagation();
                       handleStartLesson(lesson.id);
@@ -203,14 +238,6 @@ export default function StudyPlanDetailPage({ params }: PageProps) {
                       ? "Continue"
                       : "Start"}
                   </Button>
-                  <Link
-                    href={`/chat?context=lesson-${lesson.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button size="sm" variant="ghost">
-                      <MessageCircle className="h-4 w-4" />
-                    </Button>
-                  </Link>
                 </div>
               </div>
             ))}
