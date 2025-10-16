@@ -19,13 +19,13 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-4xl font-display font-bold mb-2">
+        <h1 className="text-3xl font-display font-bold mb-1">
           Welcome back! 👋
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Here's your learning progress and upcoming sessions.
         </p>
       </div>

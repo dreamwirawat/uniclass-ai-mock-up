@@ -102,6 +102,31 @@ export function ChatSidebar({
     }
   }, [contextType, messages.length]);
 
+  // Listen for highlight popup events
+  useEffect(() => {
+    const handleAskAIEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        text: string;
+        prefix: string;
+      }>;
+      const { text, prefix } = customEvent.detail;
+
+      // Set the input with the highlighted text
+      setInput(`${prefix}"${text}"`);
+
+      // Optionally, auto-send the message
+      setTimeout(() => {
+        handleSendWithText(`${prefix}"${text}"`);
+      }, 100);
+    };
+
+    window.addEventListener("askAIAboutText", handleAskAIEvent);
+
+    return () => {
+      window.removeEventListener("askAIAboutText", handleAskAIEvent);
+    };
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -110,18 +135,18 @@ export function ChatSidebar({
     scrollToBottom();
   }, [messages, isOpen]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleSendWithText = async (text: string) => {
+    if (!text.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input,
+      content: text,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const userInput = input;
+    const userInput = text;
     setInput("");
     setIsTyping(true);
 
@@ -174,6 +199,11 @@ export function ChatSidebar({
     }, 1500);
   };
 
+  const handleSend = async () => {
+    if (!input.trim()) return;
+    handleSendWithText(input);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -201,7 +231,7 @@ export function ChatSidebar({
     if (!isOpen) return null;
 
     return (
-      <div className="w-96 bg-background border-l shadow-lg flex flex-col h-full animate-slide-in-right">
+      <div className="bg-background border-l shadow-lg flex flex-col h-[calc(100vh-6rem)] animate-slide-in-right rounded-lg overflow-hidden">
         {renderChatContent()}
       </div>
     );
@@ -310,7 +340,7 @@ export function ChatSidebar({
               >
                 {message.context && (
                   <div className="text-xs p-2 rounded-lg bg-muted/50 border italic text-muted-foreground">
-                    Context: "{message.context}"
+                    Context: &quot;{message.context}&quot;
                   </div>
                 )}
                 <div

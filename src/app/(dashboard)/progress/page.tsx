@@ -39,11 +39,11 @@ export default function ProgressPage() {
     setPlans(studyPlans);
   }, []);
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-4xl font-display font-bold mb-2">Your Progress</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-display font-bold mb-1">Your Progress</h1>
+        <p className="text-sm text-muted-foreground">
           Track your learning journey and achievements
         </p>
       </div>

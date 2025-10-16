@@ -13,12 +13,12 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex">
-        {/* Desktop Sidebar */}
-        <div className="hidden lg:block">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar - Fixed with its own scroll */}
+        <div className="hidden lg:block flex-shrink-0 overflow-y-auto">
           <Sidebar />
         </div>
 
@@ -29,15 +29,15 @@ export default function DashboardLayout({
               className="fixed inset-0 bg-black/50 z-40 lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
-            <div className="fixed left-0 top-16 bottom-0 z-50 lg:hidden">
+            <div className="fixed left-0 top-16 bottom-0 z-50 lg:hidden overflow-y-auto">
               <Sidebar />
             </div>
           </>
         )}
 
-        {/* Main Content */}
-        <main className="flex-1 p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        {/* Main Content - Scrollable independently */}
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <div className="max-w-[1400px] mx-auto">{children}</div>
         </main>
       </div>
 

@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export function HighlightPopup() {
   const [selectedText, setSelectedText] = useState("");
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const handleSelection = () => {
@@ -51,10 +49,13 @@ export function HighlightPopup() {
     };
   }, []);
 
-  const handleAskAI = () => {
-    // Store selected text in sessionStorage to pass to chat
-    sessionStorage.setItem("chatContext", selectedText);
-    router.push("/chat");
+  const handleAskAI = (type: "ask" | "explain") => {
+    // Dispatch custom event to communicate with ChatSidebar
+    const prefix = type === "ask" ? "อธิบายเกี่ยวกับ: " : "อธิบายแบบง่ายๆ: ";
+    const event = new CustomEvent("askAIAboutText", {
+      detail: { text: selectedText, prefix },
+    });
+    window.dispatchEvent(event);
     setIsVisible(false);
   };
 
@@ -73,7 +74,7 @@ export function HighlightPopup() {
         <Button
           size="sm"
           className="gap-2 shadow-lg bg-primary hover:bg-primary/90"
-          onClick={handleAskAI}
+          onClick={() => handleAskAI("ask")}
         >
           <MessageCircle className="h-4 w-4" />
           Ask AI about this
@@ -82,7 +83,7 @@ export function HighlightPopup() {
           size="sm"
           variant="secondary"
           className="gap-2"
-          onClick={handleAskAI}
+          onClick={() => handleAskAI("explain")}
         >
           <Sparkles className="h-4 w-4" />
           Explain

@@ -40,7 +40,6 @@ export default function LessonDetailPage({ params }: PageProps) {
   const router = useRouter();
   const [completed, setCompleted] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
-  const [showAIChat, setShowAIChat] = useState(false);
 
   // Mock data - in production, fetch based on params
   const lesson = mockLessons.find((l) => l.id === lessonId) || mockLessons[0];
@@ -72,10 +71,10 @@ export default function LessonDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className="flex gap-6 h-full">
-      <div className="flex-1 space-y-6 animate-fade-in overflow-auto">
+    <div className="flex gap-6 h-[calc(100vh-6rem)] overflow-hidden">
+      <div className="flex-1 space-y-6 animate-fade-in overflow-y-auto pr-2">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between sticky top-0 bg-background z-10 pb-4 border-b mb-4">
           <div className="flex items-center gap-4">
             <Link href={`/study-plans/${id}`}>
               <Button variant="ghost" size="icon">
@@ -94,20 +93,14 @@ export default function LessonDetailPage({ params }: PageProps) {
                   </Badge>
                 )}
               </div>
-              <h1 className="text-3xl font-display font-bold">
+              <h1 className="text-2xl font-display font-bold">
                 {lesson.title}
               </h1>
-              <p className="text-muted-foreground mt-1">{studyPlan.title}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {studyPlan.title}
+              </p>
             </div>
           </div>
-          <Button
-            variant={showAIChat ? "outline" : "default"}
-            className="gap-2"
-            onClick={() => setShowAIChat(!showAIChat)}
-          >
-            <MessageCircle className="h-4 w-4" />
-            {showAIChat ? "ปิด AI Tutor" : "Ask AI Tutor"}
-          </Button>
         </div>
 
         {/* Progress Bar */}
@@ -375,14 +368,16 @@ export default function LessonDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* AI Chat Sidebar - Inline Mode */}
-      <ChatSidebar
-        mode="inline"
-        contextType="lesson"
-        contextId={lessonId}
-        isOpen={showAIChat}
-        onOpenChange={setShowAIChat}
-      />
+      {/* AI Chat Sidebar - Always Visible */}
+      <div className="w-96 flex-shrink-0">
+        <ChatSidebar
+          mode="inline"
+          contextType="lesson"
+          contextId={lessonId}
+          isOpen={true}
+          onOpenChange={() => {}}
+        />
+      </div>
     </div>
   );
 }

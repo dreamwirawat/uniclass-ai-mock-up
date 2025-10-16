@@ -76,10 +76,10 @@ export default function SchedulePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-display font-bold mb-2">
+          <h1 className="text-3xl font-display font-bold mb-1">
             Study Schedule
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Plan and track your study sessions
           </p>
         </div>

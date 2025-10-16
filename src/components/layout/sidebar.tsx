@@ -32,12 +32,9 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <aside
-      className={cn(
-        "flex flex-col w-64 bg-card border-r min-h-[calc(100vh-4rem)]",
-        className
-      )}
+      className={cn("flex flex-col w-64 bg-card border-r h-full", className)}
     >
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -62,7 +59,7 @@ export function Sidebar({ className }: SidebarProps) {
       </nav>
 
       {/* Bottom section - optional */}
-      <div className="p-4 border-t">
+      <div className="p-4 border-t flex-shrink-0">
         <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
           <h3 className="font-display font-bold text-sm mb-1">
             Upgrade to Pro
