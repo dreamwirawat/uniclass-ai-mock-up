@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowRight } from "lucide-react";
+import { UniClassLogo } from "@/components/brand/uniclass-logo";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -34,10 +35,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-accent items-center justify-center mb-4">
-            <span className="text-white font-display font-bold text-3xl">
-              U
-            </span>
+          <div className="flex justify-center mb-4">
+            <UniClassLogo size="xl" variant="minimal" showText={false} />
           </div>
           <h1 className="text-3xl font-display font-bold">Create Account</h1>
           <p className="text-muted-foreground mt-2">

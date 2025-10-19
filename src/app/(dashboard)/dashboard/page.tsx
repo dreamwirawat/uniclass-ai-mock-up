@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -9,14 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
-  Send,
-  Bot,
-  User,
-  Sparkles,
   Clock,
   BookOpen,
   Star,
@@ -24,84 +17,15 @@ import {
   Play,
   Users,
   Award,
+  MessageCircle,
+  TrendingUp,
+  Calendar,
+  Plus,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
+import { Chat } from "@/components/chat/chat";
 
 export default function HomePage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content:
-        "สวัสดีค่ะ! ยินดีต้อนรับสู่ UniClass AI 🎓\n\nฉันคือติวเตอร์ AI ของคุณ ฉันพร้อมช่วยเหลือคุณในการเรียนรู้ คุณสามารถถามอะไรฉันก็ได้ หรือเลือกจากแผนการเรียนที่แนะนำด้านล่างค่ะ!",
-      timestamp: new Date(),
-    },
-  ]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    const userInput = input;
-    setInput("");
-    setIsTyping(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "น่าสนใจมากเลยค่ะ! ให้ฉันช่วยอธิบายเรื่องนี้ให้คุณฟังนะคะ...",
-        "คำถามที่ดีมากค่ะ! ฉันจะช่วยคุณทำความเข้าใจเรื่องนี้ให้ชัดเจนขึ้น...",
-        "เยี่ยมเลยค่ะ! ให้ฉันแนะนำวิธีการเรียนรู้เรื่องนี้ให้คุณนะคะ...",
-        "ฉันเข้าใจคำถามของคุณแล้วค่ะ ให้ฉันช่วยตอบและแนะนำเพิ่มเติมนะคะ...",
-      ];
-
-      const randomResponse =
-        responses[Math.floor(Math.random() * responses.length)];
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `${randomResponse}\n\nนี่คือการตอบกลับแบบจำลอง ในระบบจริงจะเชื่อมต่อกับ OpenAI API เพื่อให้คำตอบที่ชาญฉลาดและตรงตามบริบทของคำถามและการเรียนรู้ของคุณค่ะ`,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 1500);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <div className="container mx-auto px-4 py-8">
@@ -117,131 +41,125 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Chat Interface */}
-          <div className="lg:col-span-2">
-            <Card className="h-[600px] flex flex-col animate-slide-up">
-              <CardHeader className="border-b">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Bot className="h-5 w-5 text-primary" />
-                      AI Tutor Chat
-                    </CardTitle>
-                    <CardDescription>
-                      สนทนากับติวเตอร์ AI ของคุณได้ทันที
-                    </CardDescription>
+          {/* Quick Actions */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Quick Stats */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="animate-slide-up">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <BookOpen className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">12</p>
+                      <p className="text-sm text-muted-foreground">
+                        Study Plans
+                      </p>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    GPT-4
-                  </Badge>
-                </div>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="animate-slide-up"
+                style={{ animationDelay: "100ms" }}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center">
+                      <TrendingUp className="h-6 w-6 text-accent" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">85%</p>
+                      <p className="text-sm text-muted-foreground">Progress</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="animate-slide-up"
+                style={{ animationDelay: "200ms" }}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+                      <Clock className="h-6 w-6 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">24h</p>
+                      <p className="text-sm text-muted-foreground">This Week</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <Card className="animate-slide-up">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                  Quick Actions
+                </CardTitle>
+                <CardDescription>
+                  เริ่มต้นการเรียนรู้ของคุณได้ทันที
+                </CardDescription>
               </CardHeader>
-
-              <CardContent className="flex-1 overflow-hidden flex flex-col p-0">
-                {/* Messages Area */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={cn(
-                        "flex gap-3 animate-slide-up",
-                        message.role === "user"
-                          ? "flex-row-reverse"
-                          : "flex-row"
-                      )}
-                    >
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        {message.role === "assistant" ? (
-                          <>
-                            <AvatarImage src="/ai-avatar.png" />
-                            <AvatarFallback className="bg-primary text-primary-foreground">
-                              <Bot className="h-4 w-4" />
-                            </AvatarFallback>
-                          </>
-                        ) : (
-                          <>
-                            <AvatarImage src="/user-avatar.png" />
-                            <AvatarFallback className="bg-accent">
-                              <User className="h-4 w-4" />
-                            </AvatarFallback>
-                          </>
-                        )}
-                      </Avatar>
-
-                      <div
-                        className={cn(
-                          "flex-1 space-y-2",
-                          message.role === "user"
-                            ? "flex flex-col items-end max-w-[80%]"
-                            : "max-w-full"
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "p-4 rounded-2xl",
-                            message.role === "assistant"
-                              ? "bg-muted max-w-[80%]"
-                              : "bg-primary text-primary-foreground"
-                          )}
-                        >
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                            {message.content}
-                          </p>
-                        </div>
-
-                        <span className="text-xs text-muted-foreground px-2">
-                          {message.timestamp.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-
-                  {isTyping && (
-                    <div className="flex gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                          <Bot className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="p-4 rounded-2xl bg-muted">
-                        <div className="flex gap-1">
-                          <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce" />
-                          <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:0.2s]" />
-                          <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:0.4s]" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Input Area */}
-                <div className="p-4 border-t bg-background">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="ถามอะไรฉันก็ได้ หรือเลือกแผนการเรียนด้านล่าง..."
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      className="flex-1"
-                    />
-                    <Button
-                      onClick={handleSend}
-                      disabled={!input.trim()}
-                      className="flex-shrink-0"
-                    >
-                      <Send className="h-4 w-4" />
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Link href="/chat">
+                    <Button className="w-full gap-2 h-12" variant="default">
+                      <MessageCircle className="h-5 w-5" />
+                      เริ่มสนทนากับ AI Tutor
                     </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    กด Enter เพื่อส่งข้อความ, Shift + Enter สำหรับบรรทัดใหม่
-                  </p>
+                  </Link>
+                  <Link href="/study-plans/create">
+                    <Button className="w-full gap-2 h-12" variant="outline">
+                      <Plus className="h-5 w-5" />
+                      สร้างแผนการเรียนใหม่
+                    </Button>
+                  </Link>
+                  <Link href="/marketplace">
+                    <Button className="w-full gap-2 h-12" variant="outline">
+                      <BookOpen className="h-5 w-5" />
+                      ดูเทมเพลตใน Marketplace
+                    </Button>
+                  </Link>
+                  <Link href="/schedule">
+                    <Button className="w-full gap-2 h-12" variant="outline">
+                      <Calendar className="h-5 w-5" />
+                      จัดตารางเรียน
+                    </Button>
+                  </Link>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Compact Chat Preview */}
+            <Card className="animate-slide-up">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <MessageCircle className="h-5 w-5 text-primary" />
+                    AI Tutor Preview
+                  </span>
+                  <Link href="/chat">
+                    <Button variant="ghost" size="sm">
+                      เปิดหน้าจอเต็ม
+                    </Button>
+                  </Link>
+                </CardTitle>
+                <CardDescription>ลองสนทนากับ AI Tutor ได้เลย</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Chat
+                  variant="compact"
+                  showHeader={false}
+                  placeholder="ลองถามอะไรฉันดู..."
+                  welcomeMessage="สวัสดีค่ะ! ฉันพร้อมช่วยเหลือคุณในการเรียนรู้ คุณสามารถถามอะไรฉันก็ได้ค่ะ!"
+                />
               </CardContent>
             </Card>
           </div>

@@ -37,29 +37,49 @@ interface MultiTabChatProps {
   className?: string;
   maxTabs?: number;
   storageKey?: string;
+  initialContext?: string;
 }
 
 export function MultiTabChat({
   className,
   maxTabs = 5,
   storageKey = "multi-tab-chat",
+  initialContext,
 }: MultiTabChatProps) {
-  const [tabs, setTabs] = useState<ChatTab[]>([
-    {
-      id: "1",
-      title: "New Chat",
-      messages: [
-        {
-          id: "1",
-          role: "assistant",
-          content:
-            "สวัสดีค่ะ! ฉันคือติวเตอร์ AI ของคุณ ฉันพร้อมช่วยเหลือคุณในการเรียนรู้ คุณสามารถถามอะไรฉันก็ได้ค่ะ!",
-          timestamp: new Date(),
-        },
-      ],
-      isActive: true,
-    },
-  ]);
+  const [tabs, setTabs] = useState<ChatTab[]>(() => {
+    const initialMessages = [
+      {
+        id: "1",
+        role: "assistant" as const,
+        content:
+          "สวัสดีค่ะ! ฉันคือติวเตอร์ AI ของคุณ ฉันพร้อมช่วยเหลือคุณในการเรียนรู้ คุณสามารถถามอะไรฉันก็ได้ค่ะ!",
+        timestamp: new Date(),
+      },
+    ];
+
+    // If there's initial context, add it as a user message
+    if (initialContext) {
+      initialMessages.push({
+        id: "2",
+        role: "user" as const,
+        content: initialContext,
+        timestamp: new Date(),
+      });
+    }
+
+    return [
+      {
+        id: "1",
+        title: initialContext
+          ? initialContext.slice(0, 30) +
+            (initialContext.length > 30 ? "..." : "")
+          : "New Chat",
+        messages: initialMessages,
+        isActive: true,
+        context: initialContext,
+      },
+    ];
+  });
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);

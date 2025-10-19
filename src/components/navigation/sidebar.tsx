@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { UniClassLogo } from "@/components/brand/uniclass-logo";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -46,12 +47,10 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Header with toggle button */}
       <div className="flex items-center justify-between p-4 border-b">
         {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-white font-bold text-sm">U</span>
-            </div>
-            <span className="font-display font-bold text-lg">UniClass AI</span>
-          </div>
+          <UniClassLogo size="md" variant="default" showText={true} />
+        )}
+        {isCollapsed && (
+          <UniClassLogo size="md" variant="minimal" showText={false} />
         )}
         <button
           onClick={toggleSidebar}

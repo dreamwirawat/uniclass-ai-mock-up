@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UniClassLogo } from "@/components/brand/uniclass-logo";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -33,12 +34,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
 
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-white font-bold text-lg">U</span>
-            </div>
-            <span className="font-display font-bold text-xl hidden sm:inline-block">
-              UniClass AI
-            </span>
+            <UniClassLogo size="md" variant="default" showText={true} />
           </Link>
         </div>
 

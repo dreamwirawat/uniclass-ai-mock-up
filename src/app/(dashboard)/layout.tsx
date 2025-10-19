@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
+import { Header } from "@/components/navigation/header";
+import { Sidebar } from "@/components/navigation/sidebar";
 import { HighlightPopup } from "@/components/chat/highlight-popup";
 import { useSidebar } from "@/hooks/use-sidebar";
 

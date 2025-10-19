@@ -21,6 +21,7 @@ import {
   ArtifactData,
 } from "@/lib/artifact-generator";
 import { MultiTabChat } from "@/components/chat/multi-tab-chat";
+import { Chat } from "@/components/chat/chat";
 
 interface Message {
   id: string;
@@ -43,6 +44,7 @@ function ChatPageContent() {
           className="h-full rounded-lg border"
           maxTabs={5}
           storageKey="main-chat-tabs"
+          initialContext={context || undefined}
         />
       </div>
 
