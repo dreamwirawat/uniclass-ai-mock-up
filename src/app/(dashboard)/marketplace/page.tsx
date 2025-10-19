@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,10 +14,12 @@ import { Input } from "@/components/ui/input";
 import {
   Search,
   Star,
-  Download,
-  Eye,
-  TrendingUp,
-  CheckCircle2,
+  Clock,
+  BookOpen,
+  Users,
+  Filter,
+  Grid,
+  List,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -29,12 +30,50 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 export default function MarketplacePage() {
   const router = useRouter();
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [showDialog, setShowDialog] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const categories = [
+    { id: "all", name: "ทั้งหมด", count: templates.length },
+    {
+      id: "language",
+      name: "ภาษา",
+      count: templates.filter((t) => t.category === "ภาษา").length,
+    },
+    {
+      id: "programming",
+      name: "โปรแกรมมิ่ง",
+      count: templates.filter((t) => t.category === "โปรแกรมมิ่ง").length,
+    },
+    {
+      id: "math",
+      name: "คณิตศาสตร์",
+      count: templates.filter((t) => t.category === "คณิตศาสตร์").length,
+    },
+    {
+      id: "science",
+      name: "วิทยาศาสตร์",
+      count: templates.filter((t) => t.category === "วิทยาศาสตร์").length,
+    },
+  ];
+
+  const filteredTemplates = templates.filter((template) => {
+    const matchesSearch =
+      template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" ||
+      template.category ===
+        categories.find((c) => c.id === selectedCategory)?.name;
+    return matchesSearch && matchesCategory;
+  });
 
   const handleUseTemplate = (template: any) => {
     setSelectedTemplate(template);
@@ -67,173 +106,223 @@ export default function MarketplacePage() {
       JSON.stringify([...existingPlans, newPlan])
     );
 
-    // Update download count (mock)
     setShowDialog(false);
-    setShowSuccess(true);
-
-    setTimeout(() => {
-      setShowSuccess(false);
-      router.push(`/study-plans/${newPlanId}`);
-    }, 1500);
+    router.push(`/study-plans/${newPlanId}`);
   };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div>
+      <div className="text-center">
         <h1 className="text-4xl font-display font-bold mb-2">
           Template Marketplace
         </h1>
-        <p className="text-muted-foreground">
-          Discover and use study plan templates created by experts
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          ค้นพบและใช้เทมเพลตแผนการเรียนที่สร้างโดยผู้เชี่ยวชาญ
         </p>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
+      <div className="space-y-6">
+        {/* Search Bar */}
+        <div className="relative max-w-md mx-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search templates..." className="pl-10" />
+          <Input
+            placeholder="ค้นหาเทมเพลต..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" size="sm">
-            All
-          </Button>
-          <Button variant="ghost" size="sm">
-            Programming
-          </Button>
-          <Button variant="ghost" size="sm">
-            Language
-          </Button>
-          <Button variant="ghost" size="sm">
-            IELTS
-          </Button>
-          <Button variant="ghost" size="sm">
-            Mathematics
-          </Button>
+
+        {/* Category Filters */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(category.id)}
+              className="gap-2"
+            >
+              {category.name}
+              <Badge variant="secondary" className="ml-1">
+                {category.count}
+              </Badge>
+            </Button>
+          ))}
+        </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex justify-center">
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+            <Button
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("grid")}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("list")}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Featured Section */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-display font-bold">
-            Featured Templates
-          </h2>
+      {/* Results */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            พบ {filteredTemplates.length} เทมเพลต
+          </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featuredTemplates.map((template) => (
+
+        {/* Templates Grid/List */}
+        <div
+          className={cn(
+            "gap-6",
+            viewMode === "grid"
+              ? "grid md:grid-cols-2 lg:grid-cols-3"
+              : "space-y-4"
+          )}
+        >
+          {filteredTemplates.map((template, index) => (
             <Card
               key={template.id}
-              className="group hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer"
+              className={cn(
+                "group hover:shadow-lg transition-all duration-300 cursor-pointer",
+                viewMode === "grid"
+                  ? "hover:-translate-y-1"
+                  : "hover:border-primary/50"
+              )}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <CardHeader>
-                <div className="flex items-start justify-between mb-3">
-                  <Badge className="bg-primary">Featured</Badge>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-primary text-primary" />
-                    <span className="text-sm font-medium">
-                      {template.rating}
-                    </span>
-                  </div>
-                </div>
-                <CardTitle className="group-hover:text-primary transition-colors">
-                  {template.title}
-                </CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {template.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Category</span>
-                    <Badge variant="secondary">{template.category}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Lessons</span>
-                    <span className="font-medium">{template.lessonsCount}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Duration</span>
-                    <span className="font-medium">
-                      {template.estimatedHours}h
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
-                    <div className="flex items-center gap-1">
-                      <Download className="h-4 w-4" />
-                      {template.downloads}
+              {viewMode === "grid" ? (
+                <>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between mb-2">
+                      <Badge variant="outline">{template.category}</Badge>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-primary text-primary" />
+                        <span className="text-sm font-medium">
+                          {template.rating}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
-                      {template.views}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
+                    <CardTitle className="group-hover:text-primary transition-colors line-clamp-2">
+                      {template.title}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {template.description}
+                    </CardDescription>
+                  </CardHeader>
 
-              <CardFooter className="gap-2">
-                <Button
-                  className="flex-1"
-                  onClick={() => handleUseTemplate(template)}
-                >
-                  Use Template
-                </Button>
-                <Button variant="outline" size="icon">
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </CardFooter>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="h-4 w-4" />
+                        {template.lessonsCount} บทเรียน
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {template.estimatedHours}h
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Users className="h-4 w-4" />
+                        {template.students} คนเรียน
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleUseTemplate(template)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ใช้เทมเพลต
+                      </Button>
+                    </div>
+                  </CardContent>
+                </>
+              ) : (
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <Badge variant="outline">{template.category}</Badge>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-primary text-primary" />
+                          <span className="text-sm font-medium">
+                            {template.rating}
+                          </span>
+                        </div>
+                      </div>
+                      <CardTitle className="group-hover:text-primary transition-colors mb-2">
+                        {template.title}
+                      </CardTitle>
+                      <CardDescription className="mb-4">
+                        {template.description}
+                      </CardDescription>
+                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <BookOpen className="h-4 w-4" />
+                          {template.lessonsCount} บทเรียน
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {template.estimatedHours}h
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {template.students} คนเรียน
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => handleUseTemplate(template)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ใช้เทมเพลต
+                    </Button>
+                  </div>
+                </CardContent>
+              )}
             </Card>
           ))}
         </div>
-      </div>
 
-      {/* All Templates */}
-      <div>
-        <h2 className="text-2xl font-display font-bold mb-4">All Templates</h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {allTemplates.map((template) => (
-            <Card
-              key={template.id}
-              className="hover:shadow-lg transition-shadow cursor-pointer"
+        {filteredTemplates.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-muted-foreground mb-4">
+              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">ไม่พบเทมเพลต</h3>
+              <p>ลองเปลี่ยนคำค้นหาหรือหมวดหมู่ดูนะคะ</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("all");
+              }}
             >
-              <CardHeader>
-                <div className="flex items-start justify-between mb-2">
-                  <Badge variant="outline">{template.category}</Badge>
-                  <div className="flex items-center gap-1 text-sm">
-                    <Star className="h-3 w-3 fill-primary text-primary" />
-                    {template.rating}
-                  </div>
-                </div>
-                <CardTitle className="text-lg">{template.title}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {template.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardFooter>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => handleUseTemplate(template)}
-                >
-                  Use Template
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+              ล้างตัวกรอง
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Confirmation Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>ใช้ Template นี้</DialogTitle>
+            <DialogTitle>ใช้เทมเพลตนี้</DialogTitle>
             <DialogDescription>
-              คุณต้องการสร้าง Study Plan จาก template นี้หรือไม่?
+              คุณต้องการสร้าง Study Plan จากเทมเพลตนี้หรือไม่?
             </DialogDescription>
           </DialogHeader>
           {selectedTemplate && (
@@ -263,90 +352,72 @@ export default function MarketplacePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Success Message */}
-      {showSuccess && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
-          <Card className="w-full max-w-md m-4">
-            <CardContent className="pt-6 text-center space-y-4">
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-display font-bold mb-2">
-                  สร้าง Study Plan สำเร็จ! 🎉
-                </h3>
-                <p className="text-muted-foreground">
-                  กำลังพาคุณไปยัง Study Plan...
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }
 
-const featuredTemplates = [
+// Simplified template data
+const templates = [
   {
     id: "1",
-    title: "เตรียมสอบ IELTS Academic แบบสมบูรณ์",
-    description:
-      "การเตรียมสอบ IELTS ครบทุกส่วน พร้อมข้อสอบฝึกหัด กลยุทธ์ และเคล็ดลับจากผู้เชี่ยวชาญ",
+    title: "เตรียมสอบ IELTS Academic",
+    description: "การเตรียมสอบ IELTS ครบทุกส่วน พร้อมข้อสอบฝึกหัดและกลยุทธ์",
     category: "ภาษา",
     lessonsCount: 40,
     estimatedHours: 60,
     rating: 4.9,
-    downloads: "12.5k",
-    views: "45k",
+    students: "12.5k",
   },
   {
     id: "2",
-    title: "เส้นทางสู่ Full-Stack JavaScript Developer",
+    title: "Full-Stack JavaScript Developer",
     description:
-      "เริ่มจากศูนย์สู่ Full-Stack: HTML, CSS, JavaScript, React, Node.js, MongoDB และการ Deploy",
+      "เริ่มจากศูนย์สู่ Full-Stack: HTML, CSS, JavaScript, React, Node.js",
     category: "โปรแกรมมิ่ง",
     lessonsCount: 50,
     estimatedHours: 120,
     rating: 4.8,
-    downloads: "18.2k",
-    views: "62k",
+    students: "18.2k",
   },
   {
     id: "3",
     title: "Data Science ด้วย Python",
     description:
-      "เชี่ยวชาญ Data Science: Python, pandas, NumPy, Machine Learning และโปรเจกต์จริง",
-    category: "วิทยาศาสตร์ข้อมูล",
+      "เชี่ยวชาญ Data Science: Python, pandas, NumPy, Machine Learning",
+    category: "วิทยาศาสตร์",
     lessonsCount: 45,
     estimatedHours: 90,
     rating: 4.9,
-    downloads: "15.8k",
-    views: "51k",
+    students: "15.8k",
   },
-];
-
-const allTemplates = [
   {
     id: "4",
-    title: "ภาษาอังกฤษธุรกิจสำหรับมืออาชีพ",
+    title: "ภาษาอังกฤษธุรกิจ",
     description: "ทักษะการสื่อสารอย่างมืออาชีพสำหรับที่ทำงาน",
     category: "ภาษา",
+    lessonsCount: 20,
+    estimatedHours: 30,
     rating: 4.7,
+    students: "8.5k",
   },
   {
     id: "5",
-    title: "เชี่ยวชาญ React และ TypeScript",
+    title: "React และ TypeScript",
     description: "สร้างเว็บแอปพลิเคชันสมัยใหม่ด้วย React และ TypeScript",
     category: "โปรแกรมมิ่ง",
+    lessonsCount: 35,
+    estimatedHours: 70,
     rating: 4.8,
+    students: "12.1k",
   },
   {
     id: "6",
     title: "พื้นฐานแคลคูลัส",
     description: "คอร์สแคลคูลัสครบถ้วนตั้งแต่พื้นฐานถึงระดับสูง",
     category: "คณิตศาสตร์",
+    lessonsCount: 30,
+    estimatedHours: 50,
     rating: 4.6,
+    students: "6.8k",
   },
 ];

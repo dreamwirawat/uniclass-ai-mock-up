@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -23,10 +24,18 @@ import {
   BookOpen,
   ChevronRight,
   ChevronLeft,
+  Download,
+  File,
+  Image as ImageIcon,
+  FileVideo,
+  FileAudio,
+  Folder,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
+import { ResizablePanel } from "@/components/ui/resizable-panel";
+import { ContentEnhancer } from "@/components/ai/content-generator";
 
 interface PageProps {
   params: Promise<{
@@ -39,8 +48,8 @@ export default function LessonDetailPage({ params }: PageProps) {
   const { id, lessonId } = use(params);
   const router = useRouter();
   const [completed, setCompleted] = useState(false);
-  const [showQuiz, setShowQuiz] = useState(false);
   const [showAIChat, setShowAIChat] = useState(true);
+  const [activeTab, setActiveTab] = useState("content");
 
   // Mock data - in production, fetch based on params
   const lesson = mockLessons.find((l) => l.id === lessonId) || mockLessons[0];
@@ -69,6 +78,21 @@ export default function LessonDetailPage({ params }: PageProps) {
 
   const handleStartQuiz = () => {
     router.push(`/study-plans/${id}/lesson/${lessonId}/quiz`);
+  };
+
+  const getFileIcon = (type: string) => {
+    switch (type) {
+      case "video":
+        return <FileVideo className="h-5 w-5" />;
+      case "audio":
+        return <FileAudio className="h-5 w-5" />;
+      case "image":
+        return <ImageIcon className="h-5 w-5" />;
+      case "document":
+        return <FileText className="h-5 w-5" />;
+      default:
+        return <File className="h-5 w-5" />;
+    }
   };
 
   return (
@@ -128,36 +152,39 @@ export default function LessonDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Lesson Content */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                    Lesson Content
-                  </CardTitle>
-                  <Badge variant="outline" className="gap-1">
-                    <Clock className="h-3 w-3" />
-                    {lesson.duration} min
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="prose prose-sm max-w-none">
-                <div className="space-y-4">
-                  {lesson.content.map((section, index) => (
-                    <div key={index}>
-                      <h3 className="text-lg font-semibold mb-2">
-                        {section.heading}
-                      </h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {section.text}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+        {/* Main Content with Tabs */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Lesson Materials
+              </CardTitle>
+              <Badge variant="outline" className="gap-1">
+                <Clock className="h-3 w-3" />
+                {lesson.duration} min
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="content">Content</TabsTrigger>
+                <TabsTrigger value="files">Files</TabsTrigger>
+                <TabsTrigger value="quiz">Quiz</TabsTrigger>
+              </TabsList>
+
+              {/* Content Tab */}
+              <TabsContent value="content" className="space-y-6 mt-6">
+                <ContentEnhancer
+                  content={lesson.content
+                    .map((section) => `${section.heading}\n${section.text}`)
+                    .join("\n\n")}
+                />
 
                 {/* Example Box */}
                 {lesson.example && (
@@ -166,9 +193,7 @@ export default function LessonDetailPage({ params }: PageProps) {
                       <Play className="h-4 w-4 text-primary" />
                       ตัวอย่าง
                     </h4>
-                    <p className="text-sm text-muted-foreground">
-                      {lesson.example}
-                    </p>
+                    <ContentEnhancer content={lesson.example} />
                   </div>
                 )}
 
@@ -176,179 +201,216 @@ export default function LessonDetailPage({ params }: PageProps) {
                 {lesson.keyPoints && lesson.keyPoints.length > 0 && (
                   <div className="mt-6 p-4 rounded-lg bg-accent/50 border">
                     <h4 className="font-semibold mb-3">สรุปประเด็นสำคัญ</h4>
-                    <ul className="space-y-2">
-                      {lesson.keyPoints.map((point, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-start gap-2 text-sm"
-                        >
-                          <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <ContentEnhancer
+                      content={lesson.keyPoints
+                        .map((point, idx) => `${idx + 1}. ${point}`)
+                        .join("\n")}
+                    />
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </TabsContent>
 
-            {/* Quiz Section */}
-            {lesson.hasQuiz && (
-              <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
-                <CardHeader>
-                  <CardTitle>แบบทดสอบ</CardTitle>
-                  <CardDescription>
-                    ทดสอบความเข้าใจของคุณในบทเรียนนี้
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">
-                        {lesson.quizQuestions} คำถาม • {lesson.quizDuration}{" "}
-                        นาที
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        คะแนนผ่าน: 70%
-                      </p>
+              {/* Files Tab */}
+              <TabsContent value="files" className="space-y-4 mt-6">
+                <div className="space-y-3">
+                  {lesson.resources.map((resource, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-4 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                    >
+                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                        {getFileIcon(resource.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium truncate">
+                          {resource.title}
+                        </h4>
+                        <p className="text-sm text-muted-foreground capitalize">
+                          {resource.type} • {Math.floor(Math.random() * 10) + 1}
+                          MB
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <LinkIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <Button onClick={handleStartQuiz} className="gap-2">
-                      <Play className="h-4 w-4" />
-                      เริ่มทำแบบทดสอบ
-                    </Button>
+                  ))}
+                </div>
+
+                {/* Additional Files Section */}
+                <div className="mt-8">
+                  <h3 className="font-semibold mb-4">Additional Resources</h3>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {additionalFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                      >
+                        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                          {getFileIcon(file.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {file.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {file.size}
+                          </p>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </TabsContent>
+
+              {/* Quiz Tab */}
+              <TabsContent value="quiz" className="space-y-4 mt-6">
+                {lesson.hasQuiz ? (
+                  <div className="space-y-6">
+                    <div className="text-center py-8">
+                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <Play className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">
+                        แบบทดสอบบทเรียน
+                      </h3>
+                      <p className="text-muted-foreground mb-6">
+                        ทดสอบความเข้าใจของคุณในบทเรียนนี้
+                      </p>
+
+                      <div className="grid gap-4 md:grid-cols-3 max-w-2xl mx-auto mb-6">
+                        <div className="text-center p-4 rounded-lg bg-muted/50">
+                          <div className="text-2xl font-bold text-primary">
+                            {lesson.quizQuestions}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            คำถาม
+                          </div>
+                        </div>
+                        <div className="text-center p-4 rounded-lg bg-muted/50">
+                          <div className="text-2xl font-bold text-primary">
+                            {lesson.quizDuration}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            นาที
+                          </div>
+                        </div>
+                        <div className="text-center p-4 rounded-lg bg-muted/50">
+                          <div className="text-2xl font-bold text-primary">
+                            70%
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            คะแนนผ่าน
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={handleStartQuiz}
+                        size="lg"
+                        className="gap-2"
+                      >
+                        <Play className="h-5 w-5" />
+                        เริ่มทำแบบทดสอบ
+                      </Button>
+                    </div>
+
+                    {/* Quiz Instructions */}
+                    <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+                      <CardHeader>
+                        <CardTitle className="text-lg">
+                          คำแนะนำการทำแบบทดสอบ
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium">อ่านคำถามให้ละเอียด</p>
+                            <p className="text-sm text-muted-foreground">
+                              ทำความเข้าใจคำถามก่อนตอบ
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium">
+                              ใช้เวลาอย่างมีประสิทธิภาพ
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              มีเวลา {lesson.quizDuration} นาทีสำหรับ{" "}
+                              {lesson.quizQuestions} คำถาม
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium">ตรวจสอบคำตอบก่อนส่ง</p>
+                            <p className="text-sm text-muted-foreground">
+                              ใช้เวลาสุดท้ายในการตรวจสอบ
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                      <Play className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      ไม่มีแบบทดสอบ
+                    </h3>
+                    <p className="text-muted-foreground">
+                      บทเรียนนี้ไม่มีแบบทดสอบ คุณสามารถไปยังบทเรียนถัดไปได้เลย
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between pt-4">
+          {prevLesson ? (
+            <Link href={`/study-plans/${id}/lesson/${prevLesson.id}`}>
+              <Button variant="outline" className="gap-2">
+                <ChevronLeft className="h-4 w-4" />
+                บทก่อนหน้า
+              </Button>
+            </Link>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex gap-2">
+            {!lesson.completed && !completed && (
+              <Button onClick={handleComplete} className="gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                ทำเครื่องหมายว่าเสร็จสิ้น
+              </Button>
             )}
 
-            {/* Navigation */}
-            <div className="flex items-center justify-between pt-4">
-              {prevLesson ? (
-                <Link href={`/study-plans/${id}/lesson/${prevLesson.id}`}>
-                  <Button variant="outline" className="gap-2">
-                    <ChevronLeft className="h-4 w-4" />
-                    บทก่อนหน้า
-                  </Button>
-                </Link>
-              ) : (
-                <div />
-              )}
-
-              <div className="flex gap-2">
-                {!lesson.completed && !completed && (
-                  <Button onClick={handleComplete} className="gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    ทำเครื่องหมายว่าเสร็จสิ้น
-                  </Button>
-                )}
-
-                {(lesson.completed || completed) && nextLesson && (
-                  <Link href={`/study-plans/${id}/lesson/${nextLesson.id}`}>
-                    <Button className="gap-2">
-                      บทถัดไป
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Resources */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Learning Resources</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {lesson.resources.map((resource, index) => (
-                  <a
-                    key={index}
-                    href={resource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-all group"
-                  >
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                      {resource.type === "video" && (
-                        <Video className="h-5 w-5 text-primary" />
-                      )}
-                      {resource.type === "document" && (
-                        <FileText className="h-5 w-5 text-primary" />
-                      )}
-                      {resource.type === "link" && (
-                        <LinkIcon className="h-5 w-5 text-primary" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {resource.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {resource.type}
-                      </p>
-                    </div>
-                  </a>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Link href={`/chat?context=lesson-${lessonId}`}>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start gap-2"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    Ask AI about this lesson
-                  </Button>
-                </Link>
-                <Link href={`/schedule?create=true&lesson=${lessonId}`}>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start gap-2"
-                  >
-                    <Clock className="h-4 w-4" />
-                    Schedule Review
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Lesson List */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">All Lessons</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1">
-                {mockLessons.map((l, idx) => (
-                  <Link
-                    key={l.id}
-                    href={`/study-plans/${id}/lesson/${l.id}`}
-                    className={`flex items-center gap-2 p-2 rounded-lg text-sm transition-colors ${
-                      l.id === lessonId
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-accent"
-                    }`}
-                  >
-                    {l.completed ? (
-                      <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-                    ) : (
-                      <div className="h-4 w-4 rounded-full border-2 flex-shrink-0" />
-                    )}
-                    <span className="flex-1 truncate">
-                      {idx + 1}. {l.title}
-                    </span>
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
+            {(lesson.completed || completed) && nextLesson && (
+              <Link href={`/study-plans/${id}/lesson/${nextLesson.id}`}>
+                <Button className="gap-2">
+                  บทถัดไป
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -379,9 +441,15 @@ export default function LessonDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* AI Chat Sidebar - Toggleable */}
+      {/* AI Chat Sidebar - Resizable */}
       {showAIChat && (
-        <div className="w-96 flex-shrink-0 animate-in slide-in-from-right duration-300">
+        <ResizablePanel
+          defaultWidth={400}
+          minWidth={300}
+          maxWidth={600}
+          storageKey={`chat-panel-width-${lessonId}`}
+          className="animate-in slide-in-from-right duration-300"
+        >
           <ChatSidebar
             mode="inline"
             contextType="lesson"
@@ -389,7 +457,7 @@ export default function LessonDetailPage({ params }: PageProps) {
             isOpen={showAIChat}
             onOpenChange={setShowAIChat}
           />
-        </div>
+        </ResizablePanel>
       )}
     </div>
   );
@@ -549,4 +617,22 @@ const mockLessons = [
       },
     ],
   },
+];
+
+// Additional files for the Files tab
+const additionalFiles = [
+  {
+    name: "IELTS Reading Practice Test 1.pdf",
+    type: "document",
+    size: "2.3 MB",
+  },
+  {
+    name: "Vocabulary List - Academic Words.docx",
+    type: "document",
+    size: "1.8 MB",
+  },
+  { name: "Sample Essays Collection.pdf", type: "document", size: "4.1 MB" },
+  { name: "Pronunciation Guide.mp3", type: "audio", size: "15.2 MB" },
+  { name: "Speaking Practice Video.mp4", type: "video", size: "45.7 MB" },
+  { name: "Grammar Reference Sheet.pdf", type: "document", size: "3.2 MB" },
 ];

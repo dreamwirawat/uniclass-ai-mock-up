@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -5,239 +8,401 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
-  BookOpen,
-  Calendar,
+  Send,
+  Bot,
+  User,
+  Sparkles,
   Clock,
-  Flame,
-  MessageCircle,
-  Plus,
+  BookOpen,
+  Star,
+  ArrowRight,
+  Play,
+  Users,
+  Award,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-export default function DashboardPage() {
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
+export default function HomePage() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      role: "assistant",
+      content:
+        "สวัสดีค่ะ! ยินดีต้อนรับสู่ UniClass AI 🎓\n\nฉันคือติวเตอร์ AI ของคุณ ฉันพร้อมช่วยเหลือคุณในการเรียนรู้ คุณสามารถถามอะไรฉันก็ได้ หรือเลือกจากแผนการเรียนที่แนะนำด้านล่างค่ะ!",
+      timestamp: new Date(),
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    const userInput = input;
+    setInput("");
+    setIsTyping(true);
+
+    // Simulate AI response
+    setTimeout(() => {
+      const responses = [
+        "น่าสนใจมากเลยค่ะ! ให้ฉันช่วยอธิบายเรื่องนี้ให้คุณฟังนะคะ...",
+        "คำถามที่ดีมากค่ะ! ฉันจะช่วยคุณทำความเข้าใจเรื่องนี้ให้ชัดเจนขึ้น...",
+        "เยี่ยมเลยค่ะ! ให้ฉันแนะนำวิธีการเรียนรู้เรื่องนี้ให้คุณนะคะ...",
+        "ฉันเข้าใจคำถามของคุณแล้วค่ะ ให้ฉันช่วยตอบและแนะนำเพิ่มเติมนะคะ...",
+      ];
+
+      const randomResponse =
+        responses[Math.floor(Math.random() * responses.length)];
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `${randomResponse}\n\nนี่คือการตอบกลับแบบจำลอง ในระบบจริงจะเชื่อมต่อกับ OpenAI API เพื่อให้คำตอบที่ชาญฉลาดและตรงตามบริบทของคำถามและการเรียนรู้ของคุณค่ะ`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+      setIsTyping(false);
+    }, 1500);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Welcome Section */}
-      <div>
-        <h1 className="text-3xl font-display font-bold mb-1">
-          Welcome back! 👋
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Here&apos;s your learning progress and upcoming sessions.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="text-center mb-12 animate-fade-in">
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            ยินดีต้อนรับสู่ UniClass AI
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            แพลตฟอร์มการเรียนรู้แบบ AI ที่ปรับแต่งให้เหมาะกับคุณ พร้อมติวเตอร์
+            AI ที่พร้อมช่วยเหลือตลอด 24 ชั่วโมง
+          </p>
+        </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Study Streak</CardTitle>
-            <Flame className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-display font-bold">7 days</div>
-            <p className="text-xs text-muted-foreground">Keep it up! 🔥</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Plans</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-display font-bold">3</div>
-            <p className="text-xs text-muted-foreground">2 in progress</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Study Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-display font-bold">12.5h</div>
-            <p className="text-xs text-muted-foreground">This week</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completion</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-display font-bold">68%</div>
-            <Progress value={68} className="mt-2" />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Current Study Plans */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Current Study Plans</CardTitle>
-                <CardDescription>Your active learning paths</CardDescription>
-              </div>
-              <Link href="/study-plans/create">
-                <Button size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  New Plan
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {mockStudyPlans.map((plan) => (
-              <Link
-                key={plan.id}
-                href={`/study-plans/${plan.id}`}
-                className="block p-4 rounded-lg border hover:border-primary/50 hover:bg-accent/50 transition-all"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold">{plan.title}</h3>
-                  <span className="text-xs text-muted-foreground">
-                    {plan.lessonsCompleted}/{plan.totalLessons}
-                  </span>
-                </div>
-                <Progress
-                  value={(plan.lessonsCompleted / plan.totalLessons) * 100}
-                  className="mb-2"
-                />
-                <p className="text-sm text-muted-foreground">{plan.category}</p>
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Sessions */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Upcoming Sessions</CardTitle>
-                <CardDescription>Scheduled study time</CardDescription>
-              </div>
-              <Link href="/schedule">
-                <Button size="sm" variant="outline" className="gap-2">
-                  <Calendar className="h-4 w-4" />
-                  View Calendar
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {mockSessions.map((session) => (
-              <div
-                key={session.id}
-                className="flex items-center gap-4 p-3 rounded-lg bg-muted/50"
-              >
-                <div className="flex-shrink-0">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
-                    <span className="text-xs font-medium text-primary">
-                      {session.day}
-                    </span>
-                    <span className="text-lg font-bold">{session.date}</span>
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Chat Interface */}
+          <div className="lg:col-span-2">
+            <Card className="h-[600px] flex flex-col animate-slide-up">
+              <CardHeader className="border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bot className="h-5 w-5 text-primary" />
+                      AI Tutor Chat
+                    </CardTitle>
+                    <CardDescription>
+                      สนทนากับติวเตอร์ AI ของคุณได้ทันที
+                    </CardDescription>
                   </div>
+                  <Badge variant="outline" className="gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    GPT-4
+                  </Badge>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium truncate">{session.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {session.time}
+              </CardHeader>
+
+              <CardContent className="flex-1 overflow-hidden flex flex-col p-0">
+                {/* Messages Area */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={cn(
+                        "flex gap-3 animate-slide-up",
+                        message.role === "user"
+                          ? "flex-row-reverse"
+                          : "flex-row"
+                      )}
+                    >
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        {message.role === "assistant" ? (
+                          <>
+                            <AvatarImage src="/ai-avatar.png" />
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              <Bot className="h-4 w-4" />
+                            </AvatarFallback>
+                          </>
+                        ) : (
+                          <>
+                            <AvatarImage src="/user-avatar.png" />
+                            <AvatarFallback className="bg-accent">
+                              <User className="h-4 w-4" />
+                            </AvatarFallback>
+                          </>
+                        )}
+                      </Avatar>
+
+                      <div
+                        className={cn(
+                          "flex-1 space-y-2",
+                          message.role === "user"
+                            ? "flex flex-col items-end max-w-[80%]"
+                            : "max-w-full"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "p-4 rounded-2xl",
+                            message.role === "assistant"
+                              ? "bg-muted max-w-[80%]"
+                              : "bg-primary text-primary-foreground"
+                          )}
+                        >
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                            {message.content}
+                          </p>
+                        </div>
+
+                        <span className="text-xs text-muted-foreground px-2">
+                          {message.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+
+                  {isTyping && (
+                    <div className="flex gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          <Bot className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="p-4 rounded-2xl bg-muted">
+                        <div className="flex gap-1">
+                          <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce" />
+                          <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:0.2s]" />
+                          <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:0.4s]" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input Area */}
+                <div className="p-4 border-t bg-background">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="ถามอะไรฉันก็ได้ หรือเลือกแผนการเรียนด้านล่าง..."
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleSend}
+                      disabled={!input.trim()}
+                      className="flex-shrink-0"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    กด Enter เพื่อส่งข้อความ, Shift + Enter สำหรับบรรทัดใหม่
                   </p>
                 </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Jump into your learning</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Link href="/chat">
-              <Button variant="outline" className="w-full gap-2 justify-start">
-                <MessageCircle className="h-4 w-4" />
-                Ask AI Tutor
-              </Button>
-            </Link>
-            <Link href="/marketplace">
-              <Button variant="outline" className="w-full gap-2 justify-start">
-                <BookOpen className="h-4 w-4" />
-                Browse Templates
-              </Button>
-            </Link>
-            <Link href="/progress">
-              <Button variant="outline" className="w-full gap-2 justify-start">
-                <Clock className="h-4 w-4" />
-                View Progress
-              </Button>
-            </Link>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Study Plan Suggestions */}
+          <div className="space-y-6">
+            <div className="text-center lg:text-left">
+              <h2 className="text-2xl font-display font-bold mb-2">
+                แผนการเรียนแนะนำ
+              </h2>
+              <p className="text-muted-foreground">
+                เลือกแผนการเรียนที่เหมาะกับคุณ
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {recommendedStudyPlans.map((plan, index) => (
+                <Card
+                  key={plan.id}
+                  className="hover:shadow-lg transition-all duration-300 hover:scale-[1.02] cursor-pointer group animate-slide-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                          {plan.title}
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          {plan.description}
+                        </CardDescription>
+                      </div>
+                      <Badge variant="secondary" className="ml-2">
+                        {plan.difficulty}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {plan.duration}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <BookOpen className="h-4 w-4" />
+                          {plan.lessons} บทเรียน
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {plan.students} คนเรียน
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                        <span className="text-sm font-medium">
+                          {plan.rating}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({plan.reviews} รีวิว)
+                        </span>
+                      </div>
+                      <Link href={`/study-plans/${plan.id}`}>
+                        <Button
+                          size="sm"
+                          className="gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                        >
+                          <Play className="h-4 w-4" />
+                          เริ่มเรียน
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Quick Stats */}
+            <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
+              <CardContent className="pt-6">
+                <div className="text-center space-y-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <Award className="h-6 w-6 text-primary" />
+                    <span className="font-display font-bold text-lg">
+                      สถิติการเรียนรู้
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-primary">
+                        1,250+
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        นักเรียนที่เรียนจบ
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-primary">95%</div>
+                      <div className="text-xs text-muted-foreground">
+                        ความพึงพอใจ
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-// Mock data
-const mockStudyPlans = [
+// Mock data for recommended study plans
+const recommendedStudyPlans = [
   {
-    id: "1",
-    title: "เตรียมสอบ IELTS",
-    category: "ภาษา",
-    lessonsCompleted: 12,
-    totalLessons: 20,
+    id: "ielts-prep",
+    title: "เตรียมสอบ IELTS ฉบับสมบูรณ์",
+    description: "เตรียมความพร้อมสำหรับการสอบ IELTS ทุกทักษะ",
+    duration: "8 สัปดาห์",
+    lessons: 32,
+    difficulty: "ปานกลาง",
+    students: 1250,
+    rating: 4.8,
+    reviews: 156,
   },
   {
-    id: "2",
+    id: "web-dev-basics",
     title: "พื้นฐานการพัฒนาเว็บไซต์",
-    category: "โปรแกรมมิ่ง",
-    lessonsCompleted: 8,
-    totalLessons: 15,
+    description: "เรียนรู้ HTML, CSS, JavaScript และ React",
+    duration: "6 สัปดาห์",
+    lessons: 24,
+    difficulty: "เริ่มต้น",
+    students: 890,
+    rating: 4.7,
+    reviews: 98,
   },
   {
-    id: "3",
+    id: "data-structures",
     title: "โครงสร้างข้อมูลและอัลกอริทึม",
-    category: "วิทยาการคอมพิวเตอร์",
-    lessonsCompleted: 5,
-    totalLessons: 25,
-  },
-];
-
-const mockSessions = [
-  {
-    id: "1",
-    day: "จ",
-    date: "15",
-    title: "ฝึกพูด IELTS",
-    time: "14:00 - 15:30 น.",
+    description: "พื้นฐานสำคัญสำหรับการเขียนโปรแกรม",
+    duration: "10 สัปดาห์",
+    lessons: 40,
+    difficulty: "ยาก",
+    students: 650,
+    rating: 4.9,
+    reviews: 87,
   },
   {
-    id: "2",
-    day: "อ",
-    date: "16",
-    title: "เรียนรู้ React Hooks เชิงลึก",
-    time: "10:00 - 11:30 น.",
-  },
-  {
-    id: "3",
-    day: "พ",
-    date: "17",
-    title: "ฝึกแก้อัลกอริทึม",
-    time: "15:00 - 17:00 น.",
+    id: "business-english",
+    title: "ภาษาอังกฤษธุรกิจ",
+    description: "พัฒนาทักษะภาษาอังกฤษสำหรับการทำงาน",
+    duration: "4 สัปดาห์",
+    lessons: 16,
+    difficulty: "ปานกลาง",
+    students: 420,
+    rating: 4.6,
+    reviews: 45,
   },
 ];

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { HighlightPopup } from "@/components/chat/highlight-popup";
+import { useSidebar } from "@/hooks/use-sidebar";
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isCollapsed } = useSidebar();
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
@@ -36,7 +38,12 @@ export default function DashboardLayout({
         )}
 
         {/* Main Content - Scrollable independently */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+        <main
+          className={`
+            flex-1 overflow-y-auto p-6 lg:p-8 transition-all duration-300 ease-in-out
+            ${isCollapsed ? "lg:ml-0" : "lg:ml-0"}
+          `}
+        >
           <div className="max-w-[1400px] mx-auto">{children}</div>
         </main>
       </div>
