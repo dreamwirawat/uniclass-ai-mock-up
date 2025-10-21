@@ -47,10 +47,10 @@ export function MultiTabChat({
   initialContext,
 }: MultiTabChatProps) {
   const [tabs, setTabs] = useState<ChatTab[]>(() => {
-    const initialMessages = [
+    const initialMessages: Message[] = [
       {
         id: "1",
-        role: "assistant" as const,
+        role: "assistant",
         content:
           "สวัสดีค่ะ! ฉันคือติวเตอร์ AI ของคุณ ฉันพร้อมช่วยเหลือคุณในการเรียนรู้ คุณสามารถถามอะไรฉันก็ได้ค่ะ!",
         timestamp: new Date(),
@@ -61,7 +61,7 @@ export function MultiTabChat({
     if (initialContext) {
       initialMessages.push({
         id: "2",
-        role: "user" as const,
+        role: "user",
         content: initialContext,
         timestamp: new Date(),
       });

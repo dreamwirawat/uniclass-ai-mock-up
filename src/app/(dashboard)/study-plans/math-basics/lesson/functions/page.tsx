@@ -244,7 +244,7 @@ export default function MathLessonPage() {
                   กราฟฟังก์ชันแบบ Interactive
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  คลิกที่ปุ่ม "แสดงกราฟ" เพื่อดูกราฟแบบ interactive
+                  คลิกที่ปุ่ม &quot;แสดงกราฟ&quot; เพื่อดูกราฟแบบ interactive
                   คุณสามารถซูม, ปั่น, และสำรวจกราฟได้
                 </p>
 
